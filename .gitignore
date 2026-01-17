@@ -1,0 +1,133 @@
+# Root level .gitignore for Crawdwall project
+
+# Environment variables (SENSITIVE)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.*
+
+# Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database files (SENSITIVE)
+*.db
+*.sqlite
+*.sqlite3
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# Logs
+logs/
+*.log
+**/*.log
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Upload directories (may contain sensitive user files)
+uploads/
+**/uploads/
+# Keep .gitkeep files
+!**/.gitkeep
+
+# Test and development files
+test-*.js
+test-*.ps1
+debug-*.js
+**/test-*.js
+**/test-*.ps1
+**/debug-*.js
+
+# Generated documentation (may contain sensitive info)
+*_README.md
+TEST_RESULTS_*.md
+ENDPOINT_TEST_*.md
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Temporary files
+tmp/
+temp/
+**/tmp/
+**/temp/
+
+# Coverage reports
+coverage/
+**/coverage/
+
+# Cache directories
+.cache/
+.parcel-cache/
+**/cache/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Dependency directories
+jspm_packages/
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Next.js build output (if using Next.js in frontend)
+.next
+out
+
+# Nuxt.js build / generate output (if using Nuxt.js)
+.nuxt
+
+# Gatsby files (if using Gatsby)
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Prisma generated files (legacy - we removed Prisma)
+**/generated/
+**/prisma/generated/
+
+# Lock files (uncomment if you don't want to commit them)
+# package-lock.json
+# yarn.lock
+# **/package-lock.json
+# **/yarn.lock

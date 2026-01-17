@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+
+model User {
+  id          String     @id @default(uuid())
+  name        String
+  email       String     @unique
+  phoneNumber String?
+  password    String
+  role        Role
+  proposals   Proposal[]
+  reviews     Review[] @relation("Reviews")
+  investorInterests InvestorInterest[] // Investor interests
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum Role {
+  ORGANIZER
+  INVESTOR
+  ADMIN
+}
+
+enum AdminStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Admin {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  name        String?
+  status      AdminStatus  @default(ACTIVE)
+  createdBy   String       // Email of super admin who created this admin
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  @@map("admins")
+}
+
+
+
+
+model Proposal {
+  id              String      @id @default(uuid())
+  eventTitle      String
+  description     String
+  expectedRevenue Float
+  timeline        String
+  eventType       String? // Type of event (e.g., CONCERT, FESTIVAL, etc.)
+  pitchVideoUrl   String?
+  budgetFile      String? // URL to budget document
+  revenuePlanFile String? // URL to revenue plan document
+  status          ProposalStatus @default(SUBMITTED)
+  statusHistory   StatusHistory[]
+  reviews         Review[] @relation("ProposalReviews")
+  investorInterests InvestorInterest[] // Investor interests in this proposal
+
+  organizerId     String
+  organizer       User @relation(fields: [organizerId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StatusHistory {
+  id         String         @id @default(uuid())
+  status     ProposalStatus
+  changedAt  DateTime       @default(now())
+  proposalId String
+  proposal   Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id              String @id @default(uuid())
+  proposalId      String
+  proposal        Proposal @relation(fields: [proposalId], references: [id], name: "ProposalReviews")
+  reviewerId      String
+  reviewer        User @relation("Reviews", fields: [reviewerId], references: [id])
+  vote            String // ACCEPT or REJECT
+  riskAssessment  String
+  revenueComment  String
+  notes           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([proposalId])
+  @@index([reviewerId])
+}
+
+enum ProposalStatus {
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  FUNDED
+}
+
+enum VoteType {
+  ACCEPT
+  REJECT
+}
+
+model InvestorInterest {
+  id           String      @id @default(uuid())
+  investorId   String
+  investor     User        @relation(fields: [investorId], references: [id])
+  proposalId   String
+  proposal     Proposal    @relation(fields: [proposalId], references: [id])
+  interestedAt DateTime    @default(now())
+  status       InterestStatus @default(ACTIVE)
+  
+  @@unique([investorId, proposalId]) // Prevent duplicate interests
+  @@index([investorId])
+  @@index([proposalId])
+}
+
+enum InterestStatus {
+  ACTIVE
+  INACTIVE
+  WITHDRAWN
+}
+
+model OTP {
+  id         String   @id @default(uuid())
+  email      String
+  otp        String
+  expiresAt  DateTime
+  attempts   Int      @default(0)
+  blocked    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([email])
+}
