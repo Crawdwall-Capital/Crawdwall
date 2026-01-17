@@ -9,7 +9,10 @@
     "dev": "nodemon src/server.js",
     "migrate": "node run-migrations.js",
     "test:db": "node test-db-connection.js",
-    "test:health": "curl http://localhost:3000/health || echo 'Server not running'"
+    "test:health": "curl http://localhost:3000/health || echo 'Server not running'",
+    "build": "node build.js",
+    "build:check": "node build.js",
+    "postinstall": "npm run migrate"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
