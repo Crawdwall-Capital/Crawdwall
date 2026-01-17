@@ -117,7 +117,7 @@ auth_items.append(create_request(
     "POST",
     "/auth/admin/request-otp",
     {
-        "superAdminEmail": "ijidolamichaelidowu@gmail.com",
+        "superAdminEmail": "thiscrawdwallcapital@gmail.com",
         "adminEmail": "newadmin@example.com"
     },
     False,
@@ -141,7 +141,7 @@ auth_items.append(create_request(
     "POST",
     "/auth/admin/add-admin",
     {
-        "superAdminEmail": "ijidolamichaelidowu@gmail.com",
+        "superAdminEmail": "thiscrawdwallcapital@gmail.com",
         "adminEmail": "newadmin@example.com",
         "adminName": "New Admin"
     },

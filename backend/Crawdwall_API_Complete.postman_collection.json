@@ -301,7 +301,7 @@
             "description": "Super admin requests OTP to be sent to another admin email.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"superAdminEmail\": \"ijidolamichaelidowu@gmail.com\",\n  \"adminEmail\": \"{{adminEmail}}\"\n}",
+              "raw": "{\n  \"superAdminEmail\": \"thiscrawdwallcapital@gmail.com\",\n  \"adminEmail\": \"{{adminEmail}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -397,7 +397,7 @@
             "description": "Super admin adds a new admin user to the system.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"superAdminEmail\": \"ijidolamichaelidowu@gmail.com\",\n  \"adminEmail\": \"newadmin@example.com\",\n  \"adminName\": \"New Admin\"\n}",
+              "raw": "{\n  \"superAdminEmail\": \"thiscrawdwallcapital@gmail.com\",\n  \"adminEmail\": \"newadmin@example.com\",\n  \"adminName\": \"New Admin\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -417,7 +417,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"Admin email newadmin@example.com authorized successfully\",\n  \"admin\": {\n    \"id\": \"uuid\",\n    \"email\": \"newadmin@example.com\",\n    \"name\": \"New Admin\",\n    \"status\": \"ACTIVE\",\n    \"createdBy\": \"ijidolamichaelidowu@gmail.com\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Admin email newadmin@example.com authorized successfully\",\n  \"admin\": {\n    \"id\": \"uuid\",\n    \"email\": \"newadmin@example.com\",\n    \"name\": \"New Admin\",\n    \"status\": \"ACTIVE\",\n    \"createdBy\": \"thiscrawdwallcapital@gmail.com\"\n  }\n}"
             }
           ]
         }

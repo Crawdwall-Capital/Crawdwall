@@ -1,6 +1,6 @@
 // Super admin email configuration
 // This is the super admin email that can send OTPs to other admin emails
-export const SUPER_ADMIN_EMAIL = 'ijidolamichaelidowu@gmail.com';
+export const SUPER_ADMIN_EMAIL = 'thiscrawdwallcapital@gmail.com';
 
 // Authorized admin emails that can receive OTPs from super admin
 // These are managed dynamically, not hardcoded
