@@ -1,12 +1,36 @@
--- Create ENUM types
-CREATE TYPE "Role" AS ENUM ('ORGANIZER', 'INVESTOR', 'ADMIN');
-CREATE TYPE "AdminStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED');
-CREATE TYPE "ProposalStatus" AS ENUM ('SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'FUNDED');
-CREATE TYPE "VoteType" AS ENUM ('ACCEPT', 'REJECT');
-CREATE TYPE "InterestStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'WITHDRAWN');
+-- Create ENUM types (only if they don't exist)
+DO $$ BEGIN
+    CREATE TYPE "Role" AS ENUM ('ORGANIZER', 'INVESTOR', 'ADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE "AdminStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE "ProposalStatus" AS ENUM ('SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'FUNDED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE "VoteType" AS ENUM ('ACCEPT', 'REJECT');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE "InterestStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'WITHDRAWN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create User table
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -20,7 +44,7 @@ CREATE TABLE "User" (
 );
 
 -- Create Admin table
-CREATE TABLE "Admin" (
+CREATE TABLE IF NOT EXISTS "Admin" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
@@ -33,7 +57,7 @@ CREATE TABLE "Admin" (
 );
 
 -- Create Proposal table
-CREATE TABLE "Proposal" (
+CREATE TABLE IF NOT EXISTS "Proposal" (
     "id" TEXT NOT NULL,
     "eventTitle" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -52,7 +76,7 @@ CREATE TABLE "Proposal" (
 );
 
 -- Create StatusHistory table
-CREATE TABLE "StatusHistory" (
+CREATE TABLE IF NOT EXISTS "StatusHistory" (
     "id" TEXT NOT NULL,
     "status" "ProposalStatus" NOT NULL,
     "changedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,7 +86,7 @@ CREATE TABLE "StatusHistory" (
 );
 
 -- Create Review table
-CREATE TABLE "Review" (
+CREATE TABLE IF NOT EXISTS "Review" (
     "id" TEXT NOT NULL,
     "proposalId" TEXT NOT NULL,
     "reviewerId" TEXT NOT NULL,
@@ -77,7 +101,7 @@ CREATE TABLE "Review" (
 );
 
 -- Create InvestorInterest table
-CREATE TABLE "InvestorInterest" (
+CREATE TABLE IF NOT EXISTS "InvestorInterest" (
     "id" TEXT NOT NULL,
     "investorId" TEXT NOT NULL,
     "proposalId" TEXT NOT NULL,
@@ -88,7 +112,7 @@ CREATE TABLE "InvestorInterest" (
 );
 
 -- Create OTP table
-CREATE TABLE "OTP" (
+CREATE TABLE IF NOT EXISTS "OTP" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "otp" TEXT NOT NULL,
@@ -102,16 +126,16 @@ CREATE TABLE "OTP" (
 );
 
 -- Create unique indexes
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
-CREATE UNIQUE INDEX "InvestorInterest_investorId_proposalId_key" ON "InvestorInterest"("investorId", "proposalId");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Admin_email_key" ON "Admin"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "InvestorInterest_investorId_proposalId_key" ON "InvestorInterest"("investorId", "proposalId");
 
 -- Create indexes
-CREATE INDEX "Review_proposalId_idx" ON "Review"("proposalId");
-CREATE INDEX "Review_reviewerId_idx" ON "Review"("reviewerId");
-CREATE INDEX "InvestorInterest_investorId_idx" ON "InvestorInterest"("investorId");
-CREATE INDEX "InvestorInterest_proposalId_idx" ON "InvestorInterest"("proposalId");
-CREATE INDEX "OTP_email_idx" ON "OTP"("email");
+CREATE INDEX IF NOT EXISTS "Review_proposalId_idx" ON "Review"("proposalId");
+CREATE INDEX IF NOT EXISTS "Review_reviewerId_idx" ON "Review"("reviewerId");
+CREATE INDEX IF NOT EXISTS "InvestorInterest_investorId_idx" ON "InvestorInterest"("investorId");
+CREATE INDEX IF NOT EXISTS "InvestorInterest_proposalId_idx" ON "InvestorInterest"("proposalId");
+CREATE INDEX IF NOT EXISTS "OTP_email_idx" ON "OTP"("email");
 
 -- Add foreign key constraints
 ALTER TABLE "Proposal" ADD CONSTRAINT "Proposal_organizerId_fkey" FOREIGN KEY ("organizerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

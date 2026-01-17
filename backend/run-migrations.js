@@ -10,7 +10,26 @@ const runMigrations = async () => {
         const client = await pool.connect();
 
         console.log('Running migrations...');
-        await client.query(sql);
+
+        // Split SQL into individual statements and run them one by one
+        const statements = sql.split(';').filter(stmt => stmt.trim().length > 0);
+
+        for (const statement of statements) {
+            const trimmedStatement = statement.trim();
+            if (trimmedStatement.length === 0) continue;
+
+            try {
+                await client.query(trimmedStatement);
+                console.log('✓ Executed:', trimmedStatement.substring(0, 50) + '...');
+            } catch (error) {
+                if (error.message.includes('already exists')) {
+                    console.log('⚠ Skipped (already exists):', trimmedStatement.substring(0, 50) + '...');
+                } else {
+                    console.error('✗ Failed:', trimmedStatement.substring(0, 50) + '...');
+                    throw error;
+                }
+            }
+        }
 
         console.log('✓ Migrations completed successfully!');
 
@@ -20,10 +39,6 @@ const runMigrations = async () => {
     } catch (error) {
         console.error('✗ Migration failed:');
         console.error('Error:', error.message);
-
-        if (error.message.includes('already exists')) {
-            console.log('\nTables might already exist. This is okay!');
-        }
 
         await pool.end();
         process.exit(1);
