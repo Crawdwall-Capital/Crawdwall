@@ -16,7 +16,7 @@ services:
         value: postgresql://crawdwall_0fy3_user:btzXJIK0LPsVLPWa3SkGy379DYGRqIO8@dpg-d5kvfd1r0fns738ri9tg-a.oregon-postgres.render.com/crawdwall_0fy3
       - key: JWT_SECRET
         generateValue: true
-      - key: SUPER_ADMIN_EMAIL
+      - key: ADMIN_EMAIL
         value: thiscrawdwallcapital@gmail.com
 
 # No databases section - using existing database

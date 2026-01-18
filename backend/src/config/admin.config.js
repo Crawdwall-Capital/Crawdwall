@@ -1,18 +1,15 @@
-// Super admin email configuration
-// This is the super admin email that can send OTPs to other admin emails
-export const SUPER_ADMIN_EMAIL = 'thiscrawdwallcapital@gmail.com';
+// Admin configuration (overall platform manager)
+// This is the main admin email that uses OTP login
+export const ADMIN_EMAIL = 'thiscrawdwallcapital@gmail.com';
 
-// Authorized admin emails that can receive OTPs from super admin
-// These are managed dynamically, not hardcoded
-export const AUTHORIZED_ADMIN_EMAILS = [];
+// Officer Configuration (review staff created by admin)
+export const OFFICER_CONFIG = {
+  defaultStatus: 'ACTIVE',
+  maxLoginAttempts: 5,
+  passwordMinLength: 8
+};
 
-// For development/testing purposes, you can temporarily add emails here
-// In production, this should be managed through the admin panel
-export const TEMP_AUTHORIZED_ADMINS = [
-  'jw202185@gmail.com'  // Example admin email
-];
-
-// OTP Configuration
+// OTP Configuration (for Admin login only)
 export const OTP_CONFIG = {
   length: 6,                    // Length of OTP code
   expiryMinutes: 10,            // OTP expiry time in minutes

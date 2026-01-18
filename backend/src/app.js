@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import authRoutes from './modules/auth/auth.routes.js';
 import organizerRoutes from './modules/proposal/organizer.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
+import officerRoutes from './modules/officer/officer.routes.js';
 import investorRoutes from './modules/investor/investor.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 
@@ -28,7 +29,8 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 // Routes
 app.use('/auth', authRoutes);
 app.use('/organizer/proposals', organizerRoutes);
-app.use('/api/v1/admin', adminRoutes);
+app.use('/admin', adminRoutes); // Admin routes (OTP login, officer management)
+app.use('/officer', officerRoutes); // Officer routes (login, proposal review)
 app.use('/api/v1/investor', investorRoutes);
 app.use('/upload', uploadRoutes);
 

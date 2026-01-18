@@ -1,32 +1,25 @@
 import express from 'express';
-import { getAllSubmittedProposals, getProposalDetails, submitVote } from './admin.controller.js';
-import { authenticate } from '../middlewares/auth.middleware.js';
-import { authorize } from '../middlewares/role.middleware.js';
+import * as adminController from './admin.controller.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
+import { requireRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-// View all submitted proposals - only for admins
-router.get(
-  '/proposals',
-  authenticate,
-  authorize('ADMIN'),
-  getAllSubmittedProposals
-);
+// Admin OTP authentication (no auth required)
+router.post('/request-otp', adminController.requestAdminOTP);
+router.post('/verify-otp', adminController.verifyAdminOTP);
 
-// View proposal details (triggers UNDER_REVIEW status) - only for admins
-router.get(
-  '/proposals/:proposalId',
-  authenticate,
-  authorize('ADMIN'),
-  getProposalDetails
-);
+// Admin functions (require admin authentication)
+router.use(authenticateToken);
+router.use(requireRole(['ADMIN']));
 
-// Submit vote and review for a proposal - only for admins
-router.post(
-  '/proposals/:proposalId/vote',
-  authenticate,
-  authorize('ADMIN'),
-  submitVote
-);
+// Officer management
+router.post('/officers', adminController.createOfficer);
+router.get('/officers', adminController.getAllOfficers);
+router.put('/officers/:officerId/status', adminController.updateOfficerStatus);
+router.delete('/officers/:officerId', adminController.deleteOfficer);
+
+// Platform statistics
+router.get('/stats', adminController.getPlatformStats);
 
 export default router;
