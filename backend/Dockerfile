@@ -12,8 +12,6 @@ RUN npm ci --only=production
 
 # Copy source code
 COPY src/ ./src/
-COPY run-migrations.js ./
-COPY create-tables.sql ./
 
 # Create uploads directory
 RUN mkdir -p uploads/budgets uploads/reports
