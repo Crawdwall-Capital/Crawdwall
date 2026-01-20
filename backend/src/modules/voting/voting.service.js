@@ -1,5 +1,6 @@
 import pool from '../../config/prisma.js';
 import { v4 as uuidv4 } from 'uuid';
+import { sendProposalStatusNotification, sendOfficerNotifications } from '../notifications/notification.service.js';
 
 // Voting configuration (can be made configurable by Admin later)
 const VOTING_CONFIG = {
@@ -87,6 +88,9 @@ export const submitVote = async (officerId, proposalId, voteData) => {
 
         // 6. Check voting threshold and update proposal status if needed
         const voteResult = await checkVotingThreshold(client, proposalId);
+
+        // 7. Send real-time notification to organizer about the vote
+        await sendVoteNotificationToOrganizer(proposalId, decision, voteResult);
 
         await client.query('COMMIT');
 
@@ -354,8 +358,22 @@ export async function triggerAcceptanceWorkflow(client, proposalId, acceptVotes,
             [proposalId, proposal.organizerId, callbackDate]
         );
 
-        // 2. Send acceptance notification
-        await sendAcceptanceNotification(proposal, acceptVotes, totalVotes, callbackDate);
+        // 2. Send acceptance notification to organizer
+        await sendProposalStatusNotification(proposalId, 'APPROVED', {
+            acceptVotes,
+            totalVotes,
+            callbackDate: callbackDate.toISOString()
+        });
+
+        // 3. Send notification to officers about the decision
+        await sendOfficerNotifications('PROPOSAL_DECIDED', {
+            proposalId,
+            eventTitle: proposal.eventTitle,
+            decision: 'APPROVED',
+            acceptVotes,
+            rejectVotes: totalVotes - acceptVotes,
+            totalVotes
+        });
 
         // 3. Unlock funding agreement stage
         await client.query(
@@ -467,8 +485,22 @@ async function triggerRejectionWorkflow(client, proposalId, acceptVotes, totalVo
 
         const proposal = proposalResult.rows[0];
 
-        // 1. Send rejection notification
-        await sendRejectionNotification(proposal, acceptVotes, totalVotes, rejectionType);
+        // 1. Send rejection notification to organizer
+        await sendProposalStatusNotification(proposalId, 'REJECTED', {
+            acceptVotes,
+            totalVotes,
+            rejectionType
+        });
+
+        // 2. Send notification to officers about the decision
+        await sendOfficerNotifications('PROPOSAL_DECIDED', {
+            proposalId,
+            eventTitle: proposal.eventTitle,
+            decision: 'REJECTED',
+            acceptVotes,
+            rejectVotes: totalVotes - acceptVotes,
+            totalVotes
+        });
 
         // 2. Archive admin reviews
         await client.query(
@@ -616,3 +648,102 @@ export const getProposalAuditTrail = async (proposalId) => {
 
     return result.rows;
 };
+/**
+ * SEND REAL-TIME VOTE NOTIFICATION TO ORGANIZER
+ */
+async function sendVoteNotificationToOrganizer(proposalId, decision, voteResult) {
+    try {
+        // Get proposal and organizer details
+        const proposalResult = await pool.query(
+            `SELECT p.*, u.name as "organizerName", u.email as "organizerEmail"
+             FROM "Proposal" p
+             JOIN "User" u ON p."organizerId" = u.id
+             WHERE p.id = $1`,
+            [proposalId]
+        );
+
+        if (proposalResult.rows.length === 0) {
+            return; // Proposal not found
+        }
+
+        const proposal = proposalResult.rows[0];
+
+        // Create notification content based on vote and current status
+        let notificationTitle, notificationMessage;
+
+        if (voteResult.newStatus === 'APPROVED') {
+            // Proposal was just approved
+            notificationTitle = `🎉 Your proposal "${proposal.eventTitle}" has been APPROVED!`;
+            notificationMessage = `Congratulations! Your proposal has received ${voteResult.acceptVotes} accept votes and has been approved for funding. A callback meeting will be scheduled within 48 hours.`;
+        } else if (voteResult.newStatus === 'REJECTED') {
+            // Proposal was just rejected
+            notificationTitle = `Your proposal "${proposal.eventTitle}" decision update`;
+            notificationMessage = `Your proposal has been reviewed and unfortunately was not approved at this time. You may reapply after 30 days with an updated proposal.`;
+        } else {
+            // Vote received but no final decision yet
+            const voteType = decision === 'ACCEPT' ? 'positive' : 'negative';
+            notificationTitle = `New vote received for "${proposal.eventTitle}"`;
+            notificationMessage = `An officer has submitted a ${voteType} vote for your proposal. Current status: ${voteResult.acceptVotes} accept votes out of ${voteResult.totalVotes} total votes. (${4 - voteResult.acceptVotes} more accepts needed for approval)`;
+        }
+
+        // Send email notification using the notification service
+        const nodemailer = await import('nodemailer');
+        const transporter = nodemailer.default.createTransporter({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: false,
+            auth: {
+                user: process.env.SMTP_USER || '',
+                pass: process.env.SMTP_PASS || ''
+            }
+        });
+
+        await transporter.sendMail({
+            from: process.env.SMTP_USER || '"Crawdwall Capital" <notifications@crawdwall.com>',
+            to: proposal.organizerEmail,
+            subject: notificationTitle,
+            html: `
+                <h2>${notificationTitle}</h2>
+                <p>Dear ${proposal.organizerName},</p>
+                <p>${notificationMessage}</p>
+                <p><strong>Proposal Details:</strong></p>
+                <ul>
+                    <li>Title: ${proposal.eventTitle}</li>
+                    <li>Current Status: ${voteResult.newStatus || 'Under Review'}</li>
+                    <li>Accept Votes: ${voteResult.acceptVotes}</li>
+                    <li>Total Votes: ${voteResult.totalVotes}</li>
+                    <li>Threshold: 4 accept votes</li>
+                </ul>
+                ${voteResult.newStatus ? '' : '<p>We will notify you immediately when a final decision is made.</p>'}
+                <p>Best regards,<br>Crawdwall Capital Team</p>
+            `
+        });
+
+        // Log the notification
+        await pool.query(
+            `INSERT INTO "Notification" (id, "proposalId", "userId", type, event, details, "sentAt", "createdAt")
+             VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+            [
+                uuidv4(),
+                proposalId,
+                proposal.organizerId,
+                'EMAIL',
+                'VOTE_RECEIVED',
+                JSON.stringify({
+                    decision,
+                    acceptVotes: voteResult.acceptVotes,
+                    totalVotes: voteResult.totalVotes,
+                    newStatus: voteResult.newStatus,
+                    email: proposal.organizerEmail,
+                    subject: notificationTitle
+                })
+            ]
+        );
+
+        console.log(`✅ Real-time vote notification sent to ${proposal.organizerEmail} for proposal: ${proposal.eventTitle}`);
+
+    } catch (error) {
+        console.error('❌ Failed to send vote notification to organizer:', error.message);
+        // Don't throw error - notifications shouldn't break the voting process
+    }
+}

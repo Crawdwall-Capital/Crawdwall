@@ -146,3 +146,105 @@ export const getMyReviews = async (req, res) => {
         return errorResponse(res, error.message, 500);
     }
 };
+/**
+ * GET PROPOSAL DOCUMENTS FOR DOWNLOAD
+ */
+export const getProposalDocuments = async (req, res) => {
+    try {
+        const { proposalId } = req.params;
+        const proposal = await officerService.getProposalWithDocuments(proposalId);
+
+        // Parse supporting documents from JSON
+        let supportingDocuments = [];
+        if (proposal.supportingDocuments) {
+            try {
+                supportingDocuments = JSON.parse(proposal.supportingDocuments);
+            } catch (e) {
+                console.warn('Failed to parse supporting documents:', e);
+            }
+        }
+
+        return successResponse(res, {
+            proposal: {
+                id: proposal.id,
+                eventTitle: proposal.eventTitle,
+                organizerName: proposal.organizerName,
+                organizerEmail: proposal.organizerEmail
+            },
+            documents: {
+                pitchVideo: proposal.pitchVideoUrl ? {
+                    name: 'Pitch Video',
+                    url: proposal.pitchVideoUrl,
+                    type: 'VIDEO'
+                } : null,
+                supportingDocuments: supportingDocuments.map((doc, index) => ({
+                    index: index,
+                    name: doc.originalName || doc.name,
+                    filename: doc.filename,
+                    size: doc.size,
+                    type: doc.mimetype || 'application/octet-stream',
+                    uploadedAt: doc.uploadedAt,
+                    downloadable: true
+                }))
+            },
+            totalDocuments: supportingDocuments.length + (proposal.pitchVideoUrl ? 1 : 0)
+        });
+
+    } catch (error) {
+        console.error('Get proposal documents error:', error);
+        return errorResponse(res, error.message, 404);
+    }
+};
+
+/**
+ * DOWNLOAD SPECIFIC DOCUMENT (REDIRECT TO URL)
+ */
+export const downloadDocument = async (req, res) => {
+    try {
+        const { proposalId, documentIndex } = req.params;
+        const proposal = await officerService.getProposalWithDocuments(proposalId);
+
+        // Parse supporting documents from JSON
+        let supportingDocuments = [];
+        if (proposal.supportingDocuments) {
+            try {
+                supportingDocuments = JSON.parse(proposal.supportingDocuments);
+            } catch (e) {
+                return errorResponse(res, 'Invalid document data', 400);
+            }
+        }
+
+        const docIndex = parseInt(documentIndex);
+        if (docIndex < 0 || docIndex >= supportingDocuments.length) {
+            return errorResponse(res, 'Document not found', 404);
+        }
+
+        const document = supportingDocuments[docIndex];
+
+        // Log document access for audit
+        await officerService.logDocumentAccess(req.user.userId, proposalId, document.originalName || document.name);
+
+        // Serve the file
+        const path = await import('path');
+        const fs = await import('fs');
+
+        const filePath = document.path;
+
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return errorResponse(res, 'File not found on server', 404);
+        }
+
+        // Set appropriate headers
+        res.setHeader('Content-Disposition', `attachment; filename="${document.originalName || document.filename}"`);
+        res.setHeader('Content-Type', document.mimetype || 'application/octet-stream');
+
+        // Stream the file
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+
+    } catch (error) {
+        console.error('Download document error:', error);
+        return errorResponse(res, error.message, 404);
+    }
+};

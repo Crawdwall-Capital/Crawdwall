@@ -2,11 +2,23 @@ import pool from '../../config/prisma.js';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * CREATE PROPOSAL (Enhanced for PRD compliance)
+ * CREATE PROPOSAL (Enhanced for PRD compliance with all required fields)
  * Supports DRAFT and SUBMITTED states
  */
 export const createProposal = async (organizerId, data, isDraft = false) => {
-  const { eventTitle, description, expectedRevenue, timeline, pitchVideoUrl } = data;
+  const {
+    eventTitle,
+    description,
+    eventType,
+    budgetRequested,
+    expectedRevenue,
+    eventDuration,
+    timeline,
+    revenuePlan,
+    targetAudience,
+    pitchVideoUrl,
+    supportingDocuments = []
+  } = data;
 
   const client = await pool.connect();
 
@@ -16,12 +28,33 @@ export const createProposal = async (organizerId, data, isDraft = false) => {
     // Determine initial status based on isDraft flag
     const initialStatus = isDraft ? 'DRAFT' : 'SUBMITTED';
 
-    // Create the proposal
+    // Create the proposal with all new fields
     const proposalResult = await client.query(
-      `INSERT INTO "Proposal" (id, "eventTitle", description, "expectedRevenue", timeline, "pitchVideoUrl", "organizerId", status, "createdAt", "updatedAt")
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      `INSERT INTO "Proposal" (
+        id, "eventTitle", description, "eventType", "budgetRequested", 
+        "expectedRevenue", "eventDuration", timeline, "revenuePlan", 
+        "targetAudience", "pitchVideoUrl", "supportingDocuments", 
+        "organizerId", status, "createdAt", "updatedAt"
+      )
+       VALUES (
+        gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
+       )
        RETURNING *`,
-      [eventTitle, description, expectedRevenue, timeline, pitchVideoUrl, organizerId, initialStatus]
+      [
+        eventTitle,
+        description,
+        eventType,
+        budgetRequested,
+        expectedRevenue,
+        eventDuration,
+        timeline,
+        revenuePlan,
+        targetAudience,
+        pitchVideoUrl,
+        JSON.stringify(supportingDocuments), // Store file metadata as JSON
+        organizerId,
+        initialStatus
+      ]
     );
 
     const proposal = proposalResult.rows[0];
@@ -37,7 +70,13 @@ export const createProposal = async (organizerId, data, isDraft = false) => {
     await client.query(
       `INSERT INTO "ProposalAudit" (id, "proposalId", action, "performedBy", "performedByRole", details, timestamp)
        VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [uuidv4(), proposal.id, 'PROPOSAL_CREATED', organizerId, 'ORGANIZER', JSON.stringify({ initialStatus })]
+      [uuidv4(), proposal.id, 'PROPOSAL_CREATED', organizerId, 'ORGANIZER', JSON.stringify({
+        initialStatus,
+        eventType,
+        budgetRequested,
+        eventDuration,
+        documentsCount: supportingDocuments.length
+      })]
     );
 
     await client.query('COMMIT');
@@ -52,139 +91,14 @@ export const createProposal = async (organizerId, data, isDraft = false) => {
 };
 
 /**
- * UPDATE PROPOSAL (For draft editing)
- */
-export const updateProposal = async (proposalId, organizerId, data) => {
-  const { eventTitle, description, expectedRevenue, timeline, pitchVideoUrl } = data;
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // Check if proposal exists and belongs to organizer
-    const existingResult = await client.query(
-      'SELECT id, status FROM "Proposal" WHERE id = $1 AND "organizerId" = $2',
-      [proposalId, organizerId]
-    );
-
-    if (existingResult.rows.length === 0) {
-      throw new Error('Proposal not found or access denied');
-    }
-
-    const existing = existingResult.rows[0];
-
-    // Only allow editing of DRAFT proposals
-    if (existing.status !== 'DRAFT') {
-      throw new Error('Can only edit proposals in DRAFT status');
-    }
-
-    // Update the proposal
-    const proposalResult = await client.query(
-      `UPDATE "Proposal" 
-       SET "eventTitle" = $1, description = $2, "expectedRevenue" = $3, 
-           timeline = $4, "pitchVideoUrl" = $5, "updatedAt" = NOW()
-       WHERE id = $6
-       RETURNING *`,
-      [eventTitle, description, expectedRevenue, timeline, pitchVideoUrl, proposalId]
-    );
-
-    // Log the update
-    await client.query(
-      `INSERT INTO "ProposalAudit" (id, "proposalId", action, "performedBy", "performedByRole", details, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [uuidv4(), proposalId, 'PROPOSAL_UPDATED', organizerId, 'ORGANIZER', JSON.stringify({ fields: Object.keys(data) })]
-    );
-
-    await client.query('COMMIT');
-
-    return proposalResult.rows[0];
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-/**
- * SUBMIT PROPOSAL (Convert from DRAFT to SUBMITTED)
- */
-export const submitProposal = async (proposalId, organizerId) => {
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // Check if proposal exists and belongs to organizer
-    const existingResult = await client.query(
-      'SELECT id, status FROM "Proposal" WHERE id = $1 AND "organizerId" = $2',
-      [proposalId, organizerId]
-    );
-
-    if (existingResult.rows.length === 0) {
-      throw new Error('Proposal not found or access denied');
-    }
-
-    const existing = existingResult.rows[0];
-
-    // Only allow submitting DRAFT proposals
-    if (existing.status !== 'DRAFT') {
-      throw new Error('Can only submit proposals in DRAFT status');
-    }
-
-    // Update status to SUBMITTED
-    const proposalResult = await client.query(
-      `UPDATE "Proposal" 
-       SET status = 'SUBMITTED', "updatedAt" = NOW()
-       WHERE id = $1
-       RETURNING *`,
-      [proposalId]
-    );
-
-    // Add status history
-    await client.query(
-      `INSERT INTO "StatusHistory" (id, status, "proposalId", "changedAt")
-       VALUES (gen_random_uuid(), 'SUBMITTED', $1, NOW())`,
-      [proposalId]
-    );
-
-    // Log the submission
-    await client.query(
-      `INSERT INTO "ProposalAudit" (id, "proposalId", action, "performedBy", "performedByRole", details, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [uuidv4(), proposalId, 'PROPOSAL_SUBMITTED', organizerId, 'ORGANIZER', JSON.stringify({ oldStatus: 'DRAFT', newStatus: 'SUBMITTED' })]
-    );
-
-    await client.query('COMMIT');
-
-    return proposalResult.rows[0];
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-/**
- * GET PROPOSALS BY ORGANIZER (Enhanced with voting info)
+ * GET PROPOSALS BY ORGANIZER
  */
 export const getProposalsByOrganizer = async (organizerId) => {
   const result = await pool.query(
-    `SELECT p.id, p."eventTitle", p.status, p."updatedAt", p."createdAt",
-            COALESCE(v.vote_count, 0) as vote_count,
-            COALESCE(v.accept_votes, 0) as accept_votes
-     FROM "Proposal" p
-     LEFT JOIN (
-       SELECT "proposalId", 
-              COUNT(*) as vote_count,
-              COUNT(CASE WHEN decision = 'ACCEPT' THEN 1 END) as accept_votes
-       FROM "Vote"
-       GROUP BY "proposalId"
-     ) v ON p.id = v."proposalId"
-     WHERE p."organizerId" = $1
-     ORDER BY p."createdAt" DESC`,
+    `SELECT id, "eventTitle", "eventType", "budgetRequested", "expectedRevenue", status, "createdAt", "updatedAt"
+     FROM "Proposal"
+     WHERE "organizerId" = $1
+     ORDER BY "createdAt" DESC`,
     [organizerId]
   );
 
@@ -192,48 +106,35 @@ export const getProposalsByOrganizer = async (organizerId) => {
 };
 
 /**
- * GET PROPOSALS FOR OFFICER REVIEW (Only SUBMITTED and UNDER_REVIEW)
+ * GET PROPOSAL BY ID
  */
-export const getProposalsForReview = async () => {
+export const getProposalById = async (proposalId, organizerId) => {
   const result = await pool.query(
-    `SELECT p.id, p."eventTitle", p.description, p."expectedRevenue", 
-            p.timeline, p.status, p."createdAt", p."updatedAt",
-            u.name as "organizerName", u.email as "organizerEmail",
-            COALESCE(v.vote_count, 0) as vote_count,
-            COALESCE(v.accept_votes, 0) as accept_votes,
-            COALESCE(v.reject_votes, 0) as reject_votes
-     FROM "Proposal" p
-     JOIN "User" u ON p."organizerId" = u.id
-     LEFT JOIN (
-       SELECT "proposalId", 
-              COUNT(*) as vote_count,
-              COUNT(CASE WHEN decision = 'ACCEPT' THEN 1 END) as accept_votes,
-              COUNT(CASE WHEN decision = 'REJECT' THEN 1 END) as reject_votes
-       FROM "Vote"
-       GROUP BY "proposalId"
-     ) v ON p.id = v."proposalId"
-     WHERE p.status IN ('SUBMITTED', 'UNDER_REVIEW')
-     ORDER BY p."createdAt" ASC`,
-    []
+    `SELECT * FROM "Proposal"
+     WHERE id = $1 AND "organizerId" = $2`,
+    [proposalId, organizerId]
   );
 
-  return result.rows;
+  if (result.rows.length === 0) {
+    throw new Error('Proposal not found');
+  }
+
+  return result.rows[0];
 };
 
 /**
- * GET PROPOSAL DETAILS (Enhanced with voting and audit info)
+ * UPDATE PROPOSAL
  */
-export const getProposalDetails = async (proposalId, requestingUserId = null, requestingUserRole = null) => {
+export const updateProposal = async (proposalId, organizerId, updateData) => {
   const client = await pool.connect();
 
   try {
-    // Get basic proposal info
+    await client.query('BEGIN');
+
+    // Check if proposal exists and belongs to organizer
     const proposalResult = await client.query(
-      `SELECT p.*, u.name as "organizerName", u.email as "organizerEmail"
-       FROM "Proposal" p
-       JOIN "User" u ON p."organizerId" = u.id
-       WHERE p.id = $1`,
-      [proposalId]
+      'SELECT id, status FROM "Proposal" WHERE id = $1 AND "organizerId" = $2',
+      [proposalId, organizerId]
     );
 
     if (proposalResult.rows.length === 0) {
@@ -242,67 +143,122 @@ export const getProposalDetails = async (proposalId, requestingUserId = null, re
 
     const proposal = proposalResult.rows[0];
 
-    // Get voting summary
-    const votingResult = await client.query(
-      `SELECT 
-         COUNT(*) as total_votes,
-         COUNT(CASE WHEN decision = 'ACCEPT' THEN 1 END) as accept_votes,
-         COUNT(CASE WHEN decision = 'REJECT' THEN 1 END) as reject_votes
-       FROM "Vote" 
-       WHERE "proposalId" = $1`,
-      [proposalId]
-    );
-
-    proposal.votingSummary = votingResult.rows[0];
-
-    // Get status history
-    const historyResult = await client.query(
-      `SELECT status, "changedAt"
-       FROM "StatusHistory"
-       WHERE "proposalId" = $1
-       ORDER BY "changedAt" ASC`,
-      [proposalId]
-    );
-
-    proposal.statusHistory = historyResult.rows;
-
-    // If requesting user is an officer, include additional voting details
-    if (requestingUserRole === 'OFFICER') {
-      // Check if officer has voted
-      const officerVoteResult = await client.query(
-        'SELECT decision, "riskAssessment", "revenueComment", notes, "createdAt" FROM "Vote" WHERE "proposalId" = $1 AND "officerId" = $2',
-        [proposalId, requestingUserId]
-      );
-
-      proposal.officerVote = officerVoteResult.rows[0] || null;
-      proposal.hasVoted = officerVoteResult.rows.length > 0;
-
-      // If officer has voted, show all votes (PRD requirement)
-      if (proposal.hasVoted) {
-        const allVotesResult = await client.query(
-          `SELECT v.decision, v."riskAssessment", v."revenueComment", v.notes, v."createdAt",
-                  o.name as "officerName"
-           FROM "Vote" v
-           JOIN "Officer" o ON v."officerId" = o.id
-           WHERE v."proposalId" = $1
-           ORDER BY v."createdAt" ASC`,
-          [proposalId]
-        );
-
-        proposal.allVotes = allVotesResult.rows;
-      }
+    // Only allow updates to DRAFT proposals
+    if (proposal.status !== 'DRAFT') {
+      throw new Error('Can only update draft proposals');
     }
 
-    return proposal;
+    // Build update query dynamically
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
 
+    for (const [key, value] of Object.entries(updateData)) {
+      if (key === 'supportingDocuments') {
+        updateFields.push(`"supportingDocuments" = $${paramCount}`);
+        updateValues.push(JSON.stringify(value));
+      } else if (key !== 'id' && key !== 'organizerId' && key !== 'createdAt') {
+        updateFields.push(`"${key}" = $${paramCount}`);
+        updateValues.push(value);
+      }
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      throw new Error('No valid fields to update');
+    }
+
+    updateFields.push(`"updatedAt" = NOW()`);
+    updateValues.push(proposalId, organizerId);
+
+    const updateQuery = `
+      UPDATE "Proposal" 
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramCount} AND "organizerId" = $${paramCount + 1}
+      RETURNING *
+    `;
+
+    const updatedResult = await client.query(updateQuery, updateValues);
+
+    await client.query('COMMIT');
+    return updatedResult.rows[0];
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     client.release();
   }
 };
 
-export const getProposalStatusHistory = async (proposalId) => {
+/**
+ * SUBMIT PROPOSAL (convert from draft)
+ */
+export const submitProposal = async (proposalId, organizerId) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Check if proposal exists and is a draft
+    const proposalResult = await client.query(
+      'SELECT id, status FROM "Proposal" WHERE id = $1 AND "organizerId" = $2',
+      [proposalId, organizerId]
+    );
+
+    if (proposalResult.rows.length === 0) {
+      throw new Error('Proposal not found');
+    }
+
+    const proposal = proposalResult.rows[0];
+
+    if (proposal.status !== 'DRAFT') {
+      throw new Error('Can only submit draft proposals');
+    }
+
+    // Update status to SUBMITTED
+    const updatedResult = await client.query(
+      `UPDATE "Proposal" 
+       SET status = 'SUBMITTED', "updatedAt" = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [proposalId]
+    );
+
+    // Log status change
+    await client.query(
+      `INSERT INTO "StatusHistory" (id, status, "proposalId", "changedAt")
+       VALUES (gen_random_uuid(), 'SUBMITTED', $1, NOW())`,
+      [proposalId]
+    );
+
+    await client.query('COMMIT');
+    return updatedResult.rows[0];
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * GET PROPOSAL HISTORY
+ */
+export const getProposalHistory = async (proposalId, organizerId) => {
+  // First verify the proposal belongs to the organizer
+  const proposalResult = await pool.query(
+    'SELECT id FROM "Proposal" WHERE id = $1 AND "organizerId" = $2',
+    [proposalId, organizerId]
+  );
+
+  if (proposalResult.rows.length === 0) {
+    throw new Error('Proposal not found');
+  }
+
   const result = await pool.query(
-    `SELECT status, "changedAt"
+    `SELECT status, "changedAt", notes
      FROM "StatusHistory"
      WHERE "proposalId" = $1
      ORDER BY "changedAt" ASC`,

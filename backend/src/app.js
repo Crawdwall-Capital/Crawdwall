@@ -9,7 +9,6 @@ import organizerRoutes from './modules/proposal/organizer.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
 import officerRoutes from './modules/officer/officer.routes.js';
 import investorRoutes from './modules/investor/investor.routes.js';
-import uploadRoutes from './modules/upload/upload.routes.js';
 
 dotenv.config({ override: true });
 
@@ -32,7 +31,9 @@ app.use('/api/organizer/proposals', organizerRoutes);
 app.use('/api/admin', adminRoutes); // Admin routes (OTP login, officer management)
 app.use('/api/officer', officerRoutes); // Officer routes (login, proposal review)
 app.use('/api/investor', investorRoutes);
-app.use('/api/upload', uploadRoutes);
+
+// Serve uploaded files (for document downloads)
+app.use('/uploads', express.static('uploads'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

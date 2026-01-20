@@ -16,6 +16,10 @@ router.get('/profile', authenticate, requireRole(['OFFICER']), officerController
 router.get('/proposals', authenticate, requireRole(['OFFICER']), officerController.getSubmittedProposals);
 router.get('/proposals/:proposalId', authenticate, requireRole(['OFFICER']), votingController.trackProposalView, officerController.getProposalDetails);
 
+// Officer document access (NEW - for downloading organizer documents)
+router.get('/proposals/:proposalId/documents', authenticate, requireRole(['OFFICER']), officerController.getProposalDocuments);
+router.get('/proposals/:proposalId/documents/:documentIndex/download', authenticate, requireRole(['OFFICER']), officerController.downloadDocument);
+
 // Officer voting functions (NEW - implements PRD voting system)
 router.post('/proposals/:proposalId/vote', authenticate, requireRole(['OFFICER']), votingController.submitVote);
 router.get('/proposals/:proposalId/votes', authenticate, requireRole(['OFFICER']), votingController.getProposalVotes);

@@ -228,3 +228,40 @@ export const getOfficerReviews = async (officerId) => {
 
     return result.rows;
 };
+/**
+ * GET PROPOSAL WITH DOCUMENTS FOR OFFICER REVIEW
+ */
+export const getProposalWithDocuments = async (proposalId) => {
+    const result = await pool.query(
+        `SELECT p.id, p."eventTitle", p."supportingDocuments", p."pitchVideoUrl",
+                u.name as "organizerName", u.email as "organizerEmail"
+         FROM "Proposal" p
+         JOIN "User" u ON p."organizerId" = u.id
+         WHERE p.id = $1 AND p.status IN ('SUBMITTED', 'UNDER_REVIEW')`,
+        [proposalId]
+    );
+
+    if (result.rows.length === 0) {
+        throw new Error('Proposal not found or not available for review');
+    }
+
+    return result.rows[0];
+};
+
+/**
+ * LOG DOCUMENT ACCESS FOR AUDIT TRAIL
+ */
+export const logDocumentAccess = async (officerId, proposalId, documentName) => {
+    await pool.query(
+        `INSERT INTO "ProposalAudit" (id, "proposalId", action, "performedBy", "performedByRole", details, timestamp)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+        [
+            require('uuid').v4(),
+            proposalId,
+            'DOCUMENT_ACCESSED',
+            officerId,
+            'OFFICER',
+            JSON.stringify({ documentName })
+        ]
+    );
+};

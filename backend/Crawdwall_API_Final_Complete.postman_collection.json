@@ -1,0 +1,1114 @@
+{
+    "info": {
+        "name": "Crawdwall Capital API - Final Complete",
+        "description": "Complete API collection for Crawdwall Capital event crowdfunding platform with file uploads, officer downloads, and real-time notifications",
+        "version": "5.0.0",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{authToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminEmail",
+            "value": "thiscrawdwallcapital@gmail.com",
+            "type": "string"
+        },
+        {
+            "key": "proposalId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "officerId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "🏥 Health Check",
+            "item": [
+                {
+                    "name": "Server Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/health",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "health"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "cookie": [],
+                            "body": "{\n  \"status\": \"OK\",\n  \"message\": \"Server is running\"\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "🔐 Authentication",
+            "item": [
+                {
+                    "name": "Register Organizer",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', response.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Organizer\",\n  \"email\": \"john.organizer@example.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"SecurePass123\",\n  \"role\": \"ORGANIZER\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Register Investor",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Jane Investor\",\n  \"email\": \"jane.investor@example.com\",\n  \"phoneNumber\": \"+1234567891\",\n  \"password\": \"SecurePass123\",\n  \"role\": \"INVESTOR\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', response.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john.organizer@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👑 Admin Functions",
+            "item": [
+                {
+                    "name": "Request Admin OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{adminEmail}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/request-otp",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "request-otp"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Admin OTP",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', response.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"otp\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/verify-otp",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "verify-otp"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Officer",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('officerId', response.data.officer.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Officer Smith\",\n  \"email\": \"officer.smith@crawdwall.com\",\n  \"password\": \"OfficerPass123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/officers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "officers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Officers",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/officers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "officers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Proposals",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/proposals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "proposals"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Platform Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "stats"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📋 Proposal Management (Enhanced)",
+            "item": [
+                {
+                    "name": "Get Event Types",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals/event-types",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals",
+                                "event-types"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Proposal (with File Upload)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('proposalId', response.data.proposal.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "eventTitle",
+                                    "value": "Tech Innovation Summit 2024",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "A comprehensive technology summit featuring AI, blockchain, and sustainable tech innovations. This event will bring together industry leaders, developers, and entrepreneurs to explore the future of technology.",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "eventType",
+                                    "value": "TECH_CONFERENCE",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "budgetRequested",
+                                    "value": "250000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "expectedRevenue",
+                                    "value": "500000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "eventDuration",
+                                    "value": "3 days",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "timeline",
+                                    "value": "Planning: 4 months, Marketing: 3 months, Event execution: 3 days, Follow-up: 2 months",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "revenuePlan",
+                                    "value": "Revenue will be generated through multiple streams: Ticket sales (50% - $250k), Corporate sponsorships (35% - $175k), Vendor exhibitions (15% - $75k). Early bird tickets at $399, regular at $599, VIP packages at $999. Expected 800 attendees.",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "targetAudience",
+                                    "value": "Software developers, tech entrepreneurs, startup founders, IT professionals, and technology enthusiasts aged 25-50 with interest in emerging technologies and business transformation.",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "pitchVideoUrl",
+                                    "value": "https://youtube.com/watch?v=example-pitch-video",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "supportingDocuments",
+                                    "type": "file",
+                                    "src": [],
+                                    "description": "Upload PDF, DOC, or XLS files (up to 10MB each, max 5 files)"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Proposals",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposal Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals/{{proposalId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals",
+                                "{{proposalId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Proposal (Draft Only)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "eventTitle",
+                                    "value": "Updated Tech Innovation Summit 2024",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "expectedRevenue",
+                                    "value": "600000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "supportingDocuments",
+                                    "type": "file",
+                                    "src": [],
+                                    "description": "Upload additional files"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals/{{proposalId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals",
+                                "{{proposalId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Submit Proposal (Draft to Submitted)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals/{{proposalId}}/submit",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "submit"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposal History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/organizer/proposals/{{proposalId}}/history",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "organizer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "history"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👮 Officer System (PRD Voting)",
+            "item": [
+                {
+                    "name": "Officer Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', response.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"officer.smith@crawdwall.com\",\n  \"password\": \"OfficerPass123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Officer Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposals for Review",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposal Details for Review",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals/{{proposalId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals",
+                                "{{proposalId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposal Documents (NEW)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals/{{proposalId}}/documents",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "documents"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Download Document (NEW)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals/{{proposalId}}/documents/0/download",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "documents",
+                                "0",
+                                "download"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Submit Vote (PRD Compliant)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"decision\": \"ACCEPT\",\n  \"riskAssessment\": \"Low risk - well-planned event with strong market demand and experienced organizer. Revenue projections are conservative and achievable.\",\n  \"revenueComment\": \"Revenue model is solid with multiple streams. Ticket pricing is competitive and sponsorship opportunities are well-identified. Expected ROI is reasonable.\",\n  \"notes\": \"Excellent proposal with comprehensive planning. Strong potential for success and positive impact on the tech community.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals/{{proposalId}}/vote",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "vote"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proposal Votes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/proposals/{{proposalId}}/votes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "proposals",
+                                "{{proposalId}}",
+                                "votes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Voting History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/votes/history",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "votes",
+                                "history"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💰 Investor Features",
+            "item": [
+                {
+                    "name": "Get Investment Opportunities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/opportunities",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "opportunities"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Express Investment Interest",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"proposalId\": \"{{proposalId}}\",\n  \"eventType\": \"TECH_CONFERENCE\",\n  \"investmentRange\": \"100000-300000\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/interest",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "interest"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Interests",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/interests",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "interests"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔒 Security Tests",
+            "item": [
+                {
+                    "name": "Unauthorized Access Test",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Invalid Token Test",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer invalid-token-123"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/officer/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "officer",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Invalid Registration Data",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"\",\n  \"email\": \"invalid-email\",\n  \"password\": \"123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Auto-set base URL based on environment",
+                    "if (!pm.collectionVariables.get('baseUrl')) {",
+                    "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+                    "}"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Global test to log response time",
+                    "pm.test('Response time is less than 5000ms', function () {",
+                    "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                    "});",
+                    "",
+                    "// Log response for debugging",
+                    "console.log('Response Status:', pm.response.status);",
+                    "console.log('Response Time:', pm.response.responseTime + 'ms');"
+                ]
+            }
+        }
+    ]
+}
