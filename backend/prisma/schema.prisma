@@ -33,25 +33,26 @@ model User {
 enum Role {
   ORGANIZER
   INVESTOR
-  ADMIN
+  OFFICER
 }
 
-enum AdminStatus {
+enum OfficerStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
 }
 
-model Admin {
+model Officer {
   id          String       @id @default(uuid())
   email       String       @unique
   name        String?
-  status      AdminStatus  @default(ACTIVE)
-  createdBy   String       // Email of super admin who created this admin
+  password    String       // Officers use email/password login
+  status      OfficerStatus @default(ACTIVE)
+  createdBy   String       // Email of admin who created this officer
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   
-  @@map("admins")
+  @@map("officers")
 }
 
 

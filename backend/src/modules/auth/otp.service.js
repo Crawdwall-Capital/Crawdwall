@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { OTP_CONFIG, SUPER_ADMIN_EMAIL } from '../../config/admin.config.js';
+import { OTP_CONFIG, ADMIN_EMAIL } from '../../config/admin.config.js';
 import pool from '../../config/prisma.js';
 
 // In-memory storage for OTPs (in production, use Redis or database)
@@ -125,9 +125,9 @@ export const verifyOTP = async (email, otp) => {
   }
 };
 
-// Check if email is the super admin email
-export const isSuperAdminEmail = (email) => {
-  return SUPER_ADMIN_EMAIL === email.toLowerCase();
+// Check if email is the admin email
+export const isAdminEmail = (email) => {
+  return ADMIN_EMAIL === email.toLowerCase();
 };
 
 // Check if email is an authorized admin email
@@ -146,11 +146,11 @@ export const isAuthorizedAdminEmail = async (email) => {
   }
 };
 
-// Authorize an admin email (to be called by super admin)
-export const authorizeAdminEmail = async (superAdminEmail, adminEmail, adminName = null) => {
-  // First verify this is coming from the super admin
-  if (!isSuperAdminEmail(superAdminEmail)) {
-    throw new Error('Only super admin can authorize new admin emails');
+// Authorize an admin email (to be called by admin)
+export const authorizeAdminEmail = async (adminEmail, newAdminEmail, adminName = null) => {
+  // First verify this is coming from the admin
+  if (!isAdminEmail(adminEmail)) {
+    throw new Error('Only admin can authorize new admin emails');
   }
 
   // Create or update admin record in database
@@ -162,12 +162,12 @@ export const authorizeAdminEmail = async (superAdminEmail, adminEmail, adminName
          status = 'ACTIVE',
          "updatedAt" = NOW()
        RETURNING *`,
-      [adminEmail.toLowerCase(), adminName, superAdminEmail.toLowerCase()]
+      [newAdminEmail.toLowerCase(), adminName, adminEmail.toLowerCase()]
     );
 
     return {
       success: true,
-      message: `Admin email ${adminEmail} authorized successfully`,
+      message: `Admin email ${newAdminEmail} authorized successfully`,
       admin: result.rows[0]
     };
   } catch (error) {

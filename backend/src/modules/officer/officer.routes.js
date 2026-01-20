@@ -1,7 +1,7 @@
 import express from 'express';
 import * as officerController from './officer.controller.js';
-import * as officerReviewController from './officer.review.controller.js';
-import { authenticateToken } from '../middlewares/auth.middleware.js';
+import * as votingController from '../voting/voting.controller.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
@@ -10,12 +10,18 @@ const router = express.Router();
 router.post('/login', officerController.loginOfficer);
 
 // Officer profile (requires officer authentication)
-router.get('/profile', authenticateToken, requireRole(['OFFICER']), officerController.getOfficerProfile);
+router.get('/profile', authenticate, requireRole(['OFFICER']), officerController.getOfficerProfile);
 
-// Officer review functions (requires officer authentication)
-router.get('/proposals', authenticateToken, requireRole(['OFFICER']), officerReviewController.getSubmittedProposals);
-router.get('/proposals/:proposalId', authenticateToken, requireRole(['OFFICER']), officerReviewController.getProposalDetails);
-router.post('/proposals/:proposalId/vote', authenticateToken, requireRole(['OFFICER']), officerReviewController.submitVote);
-router.get('/reviews', authenticateToken, requireRole(['OFFICER']), officerReviewController.getMyReviews);
+// Officer proposal review functions (requires officer authentication)
+router.get('/proposals', authenticate, requireRole(['OFFICER']), officerController.getSubmittedProposals);
+router.get('/proposals/:proposalId', authenticate, requireRole(['OFFICER']), votingController.trackProposalView, officerController.getProposalDetails);
+
+// Officer voting functions (NEW - implements PRD voting system)
+router.post('/proposals/:proposalId/vote', authenticate, requireRole(['OFFICER']), votingController.submitVote);
+router.get('/proposals/:proposalId/votes', authenticate, requireRole(['OFFICER']), votingController.getProposalVotes);
+router.get('/votes/history', authenticate, requireRole(['OFFICER']), votingController.getVotingHistory);
+
+// Legacy review endpoints (keeping for backward compatibility)
+router.get('/reviews', authenticate, requireRole(['OFFICER']), officerController.getMyReviews);
 
 export default router;

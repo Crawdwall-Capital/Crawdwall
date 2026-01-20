@@ -27,12 +27,12 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/organizer/proposals', organizerRoutes);
-app.use('/admin', adminRoutes); // Admin routes (OTP login, officer management)
-app.use('/officer', officerRoutes); // Officer routes (login, proposal review)
-app.use('/api/v1/investor', investorRoutes);
-app.use('/upload', uploadRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/organizer/proposals', organizerRoutes);
+app.use('/api/admin', adminRoutes); // Admin routes (OTP login, officer management)
+app.use('/api/officer', officerRoutes); // Officer routes (login, proposal review)
+app.use('/api/investor', investorRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

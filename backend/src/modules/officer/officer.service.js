@@ -175,3 +175,56 @@ export const updateOfficerPassword = async (officerId, newPassword) => {
 
     return result.rows[0];
 };
+
+/**
+ * GET SUBMITTED PROPOSALS FOR REVIEW
+ */
+export const getSubmittedProposals = async () => {
+    const result = await pool.query(
+        `SELECT p.id, p."eventTitle", p.description, p."expectedRevenue", 
+                p.timeline, p.status, p."createdAt", u.name as "organizerName"
+         FROM "Proposal" p
+         JOIN "User" u ON p."organizerId" = u.id
+         WHERE p.status IN ('SUBMITTED', 'UNDER_REVIEW')
+         ORDER BY p."createdAt" DESC`
+    );
+
+    return result.rows;
+};
+
+/**
+ * GET PROPOSAL DETAILS FOR REVIEW
+ */
+export const getProposalDetails = async (proposalId) => {
+    const result = await pool.query(
+        `SELECT p.id, p."eventTitle", p.description, p."expectedRevenue", 
+                p.timeline, p.status, p."createdAt", 
+                u.name as "organizerName", u.email as "organizerEmail"
+         FROM "Proposal" p
+         JOIN "User" u ON p."organizerId" = u.id
+         WHERE p.id = $1`,
+        [proposalId]
+    );
+
+    if (result.rows.length === 0) {
+        throw new Error('Proposal not found');
+    }
+
+    return result.rows[0];
+};
+
+/**
+ * GET OFFICER REVIEWS (LEGACY)
+ */
+export const getOfficerReviews = async (officerId) => {
+    const result = await pool.query(
+        `SELECT v.id, v."proposalId", v.decision, v."riskAssessment", 
+                v."revenueComment", v.notes, v."createdAt"
+         FROM "Vote" v
+         WHERE v."officerId" = $1
+         ORDER BY v."createdAt" DESC`,
+        [officerId]
+    );
+
+    return result.rows;
+};

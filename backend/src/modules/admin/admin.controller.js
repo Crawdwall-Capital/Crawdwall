@@ -167,3 +167,210 @@ export const getPlatformStats = async (req, res) => {
     return errorResponse(res, error.message, 400);
   }
 };
+/**
+ * GET ALL USERS
+ */
+export const getAllUsers = async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const users = await adminService.getAllUsers(adminEmail);
+
+    return successResponse(res, { users }, 200);
+
+  } catch (error) {
+    console.error('Get all users error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET USER DETAILS
+ */
+export const getUserDetails = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminEmail = req.user.email;
+
+    const user = await adminService.getUserDetails(adminEmail, userId);
+
+    return successResponse(res, { user }, 200);
+
+  } catch (error) {
+    console.error('Get user details error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * DELETE USER
+ */
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminEmail = req.user.email;
+
+    const user = await adminService.deleteUser(adminEmail, userId);
+
+    return successResponse(res, {
+      message: 'User deleted successfully',
+      user
+    }, 200);
+
+  } catch (error) {
+    console.error('Delete user error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET ALL PROPOSALS
+ */
+export const getAllProposals = async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const proposals = await adminService.getAllProposals(adminEmail);
+
+    return successResponse(res, { proposals }, 200);
+
+  } catch (error) {
+    console.error('Get all proposals error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET PROPOSAL DETAILS
+ */
+export const getProposalDetails = async (req, res) => {
+  try {
+    const { proposalId } = req.params;
+    const adminEmail = req.user.email;
+
+    const proposal = await adminService.getProposalDetails(adminEmail, proposalId);
+
+    return successResponse(res, { proposal }, 200);
+
+  } catch (error) {
+    console.error('Get proposal details error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * UPDATE PROPOSAL STATUS
+ */
+export const updateProposalStatus = async (req, res) => {
+  try {
+    const { proposalId } = req.params;
+    const { status } = req.body;
+    const adminEmail = req.user.email;
+
+    if (!status) {
+      return errorResponse(res, 'Status is required', 400);
+    }
+
+    const proposal = await adminService.updateProposalStatus(adminEmail, proposalId, status);
+
+    return successResponse(res, {
+      message: 'Proposal status updated successfully',
+      proposal
+    }, 200);
+
+  } catch (error) {
+    console.error('Update proposal status error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * DELETE PROPOSAL
+ */
+export const deleteProposal = async (req, res) => {
+  try {
+    const { proposalId } = req.params;
+    const adminEmail = req.user.email;
+
+    const proposal = await adminService.deleteProposal(adminEmail, proposalId);
+
+    return successResponse(res, {
+      message: 'Proposal deleted successfully',
+      proposal
+    }, 200);
+
+  } catch (error) {
+    console.error('Delete proposal error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * OVERRIDE PROPOSAL DECISION
+ */
+export const overrideProposalDecision = async (req, res) => {
+  try {
+    const { proposalId } = req.params;
+    const { decision, reason } = req.body;
+    const adminEmail = req.user.email;
+
+    if (!decision || !reason) {
+      return errorResponse(res, 'Decision and reason are required', 400);
+    }
+
+    const override = await adminService.overrideProposalDecision(adminEmail, proposalId, decision, reason);
+
+    return successResponse(res, {
+      message: 'Proposal decision overridden successfully',
+      override
+    }, 200);
+
+  } catch (error) {
+    console.error('Override proposal decision error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET PLATFORM CONFIGURATION
+ */
+export const getPlatformConfiguration = async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const config = await adminService.getPlatformConfiguration(adminEmail);
+
+    return successResponse(res, { config }, 200);
+
+  } catch (error) {
+    console.error('Get platform configuration error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * UPDATE PLATFORM CONFIGURATION
+ */
+export const updatePlatformConfiguration = async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const configUpdates = req.body;
+
+    const result = await adminService.updatePlatformConfiguration(adminEmail, configUpdates);
+
+    return successResponse(res, result, 200);
+
+  } catch (error) {
+    console.error('Update platform configuration error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+export const getPlatformActivity = async (req, res) => {
+  try {
+    const adminEmail = req.user.email;
+    const activity = await adminService.getPlatformActivity(adminEmail);
+
+    return successResponse(res, { activity }, 200);
+
+  } catch (error) {
+    console.error('Get platform activity error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};

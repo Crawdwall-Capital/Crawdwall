@@ -1,7 +1,7 @@
 
 import * as authService from './auth.service.js';
 import { registerSchema, loginSchema } from './auth.validation.js';
-import { generateOTP, storeOTP, verifyOTP, isSuperAdminEmail, authorizeAdminEmail } from './otp.service.js';
+import { generateOTP, storeOTP, verifyOTP, isAdminEmail, authorizeAdminEmail } from './otp.service.js';
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 
@@ -82,9 +82,9 @@ export const requestAdminOTP = async (req, res, next) => {
       return res.status(400).json({ message: 'Super admin email and target admin email are required' });
     }
 
-    // Check if the request is coming from the super admin
-    if (!isSuperAdminEmail(superAdminEmail)) {
-      return res.status(400).json({ message: 'Only super admin can send OTP to other admin emails' });
+    // Check if the request is coming from the admin
+    if (!isAdminEmail(superAdminEmail)) {
+      return res.status(400).json({ message: 'Only admin can send OTP to other admin emails' });
     }
 
     // Authorize the admin email in the database
@@ -160,9 +160,9 @@ export const addAdminUser = async (req, res, next) => {
       return res.status(400).json({ message: 'Super admin email and admin email are required' });
     }
 
-    // Check if the request is coming from the super admin
-    if (!isSuperAdminEmail(superAdminEmail)) {
-      return res.status(400).json({ message: 'Only super admin can add other admin users' });
+    // Check if the request is coming from the admin
+    if (!isAdminEmail(superAdminEmail)) {
+      return res.status(400).json({ message: 'Only admin can add other admin users' });
     }
 
     // Authorize the admin email in the database
