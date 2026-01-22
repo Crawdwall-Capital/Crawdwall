@@ -40,6 +40,18 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
+// Debug endpoint to check environment variables (remove in production)
+app.get('/debug/env', (req, res) => {
+  res.status(200).json({
+    NODE_ENV: process.env.NODE_ENV,
+    SMTP_HOST: process.env.SMTP_HOST ? 'SET' : 'NOT SET',
+    SMTP_PORT: process.env.SMTP_PORT ? 'SET' : 'NOT SET',
+    SMTP_USER: process.env.SMTP_USER ? 'SET' : 'NOT SET',
+    SMTP_PASS: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
+    DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET'
+  });
+});
+
 // Test endpoint
 app.post('/test-register', (req, res) => {
   console.log('Test register endpoint hit!');
