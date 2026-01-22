@@ -76,20 +76,20 @@ export const logout = async (req, res, next) => {
 
 export const requestAdminOTP = async (req, res, next) => {
   try {
-    const { superAdminEmail, adminEmail } = req.body;
+    const { email } = req.body;
 
-    if (!superAdminEmail || !adminEmail) {
-      return res.status(400).json({ message: 'Super admin email and target admin email are required' });
+    if (!email) {
+      return res.status(400).json({ message: 'Admin email is required' });
     }
 
-    // Check if the request is coming from the admin
-    if (!isAdminEmail(superAdminEmail)) {
-      return res.status(400).json({ message: 'Only admin can send OTP to other admin emails' });
+    // Check if the email is the authorized admin email
+    if (!isAdminEmail(email)) {
+      return res.status(400).json({ message: 'Only authorized admin can request OTP' });
     }
 
     // Authorize the admin email in the database
     try {
-      await authorizeAdminEmail(superAdminEmail, adminEmail);
+      await authorizeAdminEmail(email, email);
     } catch (authError) {
       console.error('Error authorizing admin email:', authError);
       return res.status(500).json({ message: 'Failed to authorize admin email' });
@@ -98,8 +98,8 @@ export const requestAdminOTP = async (req, res, next) => {
     // Generate OTP
     const otp = generateOTP();
 
-    // Store OTP for the target admin email
-    await storeOTP(adminEmail, otp);
+    // Store OTP for the admin email
+    await storeOTP(email, otp);
 
     // Create a transporter for sending email
     // In a real application, configure this with your email service provider
@@ -126,7 +126,7 @@ export const requestAdminOTP = async (req, res, next) => {
 
       await transporter.sendMail({
         from: process.env.SMTP_USER || '"Crawdwall Admin" <admin@yourdomain.com>',
-        to: adminEmail,  // Send to the target admin email, not the super admin
+        to: email,  // Send to the admin email
         subject: 'Admin Login OTP - Crawdwall Platform',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -145,7 +145,7 @@ export const requestAdminOTP = async (req, res, next) => {
       console.log('OTP email sent successfully');
       res.status(200).json({
         message: 'OTP sent successfully to admin email',
-        adminEmail: adminEmail
+        adminEmail: email
       });
     } catch (emailErr) {
       console.error('Failed to send email:', emailErr);
@@ -153,7 +153,7 @@ export const requestAdminOTP = async (req, res, next) => {
       // For security reasons, still return success message to prevent enumeration
       res.status(200).json({
         message: 'OTP generated and stored, but failed to send email. Contact admin if admin doesn\'t receive it.',
-        adminEmail: adminEmail
+        adminEmail: email
       });
     }
   } catch (err) {
