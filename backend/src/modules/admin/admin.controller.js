@@ -64,7 +64,8 @@ export const verifyAdminOTP = async (req, res) => {
 export const createOfficer = async (req, res) => {
   try {
     const { email, name, password } = req.body;
-    const adminEmail = req.user.email;
+    // For admin, userId is actually the email (from OTP login)
+    const adminEmail = req.user.userId;
 
     if (!email || !name || !password) {
       return errorResponse(res, 'Email, name, and password are required', 400);
