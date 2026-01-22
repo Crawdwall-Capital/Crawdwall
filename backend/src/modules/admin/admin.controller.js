@@ -224,6 +224,48 @@ export const deleteUser = async (req, res) => {
 };
 
 /**
+ * SUSPEND USER
+ */
+export const suspendUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
+
+    const user = await adminService.suspendUser(adminEmail, userId);
+
+    return successResponse(res, {
+      message: 'User suspended successfully',
+      user
+    }, 200);
+
+  } catch (error) {
+    console.error('Suspend user error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * UNSUSPEND USER
+ */
+export const unsuspendUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
+
+    const user = await adminService.unsuspendUser(adminEmail, userId);
+
+    return successResponse(res, {
+      message: 'User unsuspended successfully',
+      user
+    }, 200);
+
+  } catch (error) {
+    console.error('Unsuspend user error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
  * GET ALL PROPOSALS
  */
 export const getAllProposals = async (req, res) => {

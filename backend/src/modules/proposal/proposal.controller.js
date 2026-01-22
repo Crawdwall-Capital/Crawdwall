@@ -253,8 +253,7 @@ export const getProposalHistory = async (req, res) => {
     return successResponse(res, {
       history: history.map(entry => ({
         status: entry.status,
-        changedAt: entry.changedAt,
-        notes: entry.notes
+        changedAt: entry.changedAt
       }))
     });
   } catch (err) {

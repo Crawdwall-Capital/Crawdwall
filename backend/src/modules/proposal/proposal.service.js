@@ -258,7 +258,7 @@ export const getProposalHistory = async (proposalId, organizerId) => {
   }
 
   const result = await pool.query(
-    `SELECT status, "changedAt", notes
+    `SELECT status, "changedAt"
      FROM "StatusHistory"
      WHERE "proposalId" = $1
      ORDER BY "changedAt" ASC`,

@@ -181,7 +181,7 @@ export const getAllUsers = async (adminEmail) => {
   }
 
   const result = await pool.query(`
-    SELECT id, name, email, "phoneNumber", role, "createdAt", "updatedAt"
+    SELECT id, name, email, "phoneNumber", role, status, "createdAt", "updatedAt"
     FROM "User"
     ORDER BY "createdAt" DESC
   `);
@@ -300,6 +300,48 @@ export const deleteUser = async (adminEmail, userId) => {
   } finally {
     client.release();
   }
+};
+
+/**
+ * SUSPEND USER (Admin function)
+ */
+export const suspendUser = async (adminEmail, userId) => {
+  // Verify admin
+  if (adminEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    throw new Error('Unauthorized - Admin access required');
+  }
+
+  const result = await pool.query(
+    'UPDATE "User" SET status = $1, "updatedAt" = NOW() WHERE id = $2 RETURNING *',
+    ['SUSPENDED', userId]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error('User not found');
+  }
+
+  return result.rows[0];
+};
+
+/**
+ * UNSUSPEND USER (Admin function)
+ */
+export const unsuspendUser = async (adminEmail, userId) => {
+  // Verify admin
+  if (adminEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    throw new Error('Unauthorized - Admin access required');
+  }
+
+  const result = await pool.query(
+    'UPDATE "User" SET status = $1, "updatedAt" = NOW() WHERE id = $2 RETURNING *',
+    ['ACTIVE', userId]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error('User not found');
+  }
+
+  return result.rows[0];
 };
 
 /**

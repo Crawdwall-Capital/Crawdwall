@@ -23,6 +23,8 @@ router.delete('/officers/:officerId', adminController.deleteOfficer);
 // User management
 router.get('/users', adminController.getAllUsers);
 router.get('/users/:userId', adminController.getUserDetails);
+router.put('/users/:userId/suspend', adminController.suspendUser);
+router.put('/users/:userId/unsuspend', adminController.unsuspendUser);
 router.delete('/users/:userId', adminController.deleteUser);
 
 // Proposal management
