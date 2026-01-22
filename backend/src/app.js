@@ -14,13 +14,53 @@ dotenv.config({ override: true });
 
 const app = express();
 
+// CORS Configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Define allowed origins
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:5173', // Vite default
+            'http://localhost:4173', // Vite preview
+            'https://frontend-crawdwall-capital.vercel.app', // Your Vercel frontend
+            'https://crawdwall-frontend.onrender.com', // Alternative Render frontend
+            'https://crawdwall.com', // Custom domain if you have one
+            process.env.FRONTEND_URL // Environment variable for frontend URL
+        ].filter(Boolean); // Remove undefined values
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow cookies and authorization headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'Cache-Control',
+        'X-File-Name'
+    ],
+    exposedHeaders: ['Content-Disposition'], // For file downloads
+    maxAge: 86400 // Cache preflight for 24 hours
+};
+
 // Middleware
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
     next();
 });
 app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
+app.use(cors(corsOptions)); // Enable CORS with configuration
 app.use(morgan('combined')); // Logging
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -38,6 +78,16 @@ app.use('/uploads', express.static('uploads'));
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
+
+// CORS test endpoint
+app.get('/cors-test', (req, res) => {
+    res.status(200).json({
+        message: 'CORS is working!',
+        origin: req.headers.origin,
+        timestamp: new Date().toISOString(),
+        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+    });
 });
 
 // Test endpoint

@@ -40,6 +40,11 @@
             "key": "officerId",
             "value": "",
             "type": "string"
+        },
+        {
+            "key": "userId",
+            "value": "",
+            "type": "string"
         }
     ],
     "item": [
@@ -404,6 +409,163 @@
                                 "api",
                                 "admin",
                                 "stats"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Suspend User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/:userId/suspend",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                ":userId",
+                                "suspend"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "{{userId}}",
+                                    "description": "User ID to suspend"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Unsuspend User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/:userId/unsuspend",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                ":userId",
+                                "unsuspend"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "{{userId}}",
+                                    "description": "User ID to unsuspend"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/users/:userId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "users",
+                                ":userId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "{{userId}}",
+                                    "description": "User ID to delete"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Officer",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/officers/:officerId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "officers",
+                                ":officerId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "officerId",
+                                    "value": "{{officerId}}",
+                                    "description": "Officer ID to delete"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Proposal",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/proposals/:proposalId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "proposals",
+                                ":proposalId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "proposalId",
+                                    "value": "{{proposalId}}",
+                                    "description": "Proposal ID to delete"
+                                }
                             ]
                         }
                     }
