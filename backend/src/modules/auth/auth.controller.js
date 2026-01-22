@@ -105,7 +105,7 @@ export const requestAdminOTP = async (req, res, next) => {
 
             const msg = {
                 to: email,
-                from: 'test@example.com', // Temporary sender for testing
+                from: 'crawdwallcapital@gmail.com', // Verified sender email
                 subject: 'Admin Login OTP - Crawdwall Platform',
                 html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
