@@ -38,7 +38,7 @@ export const verifyAdminOTP = async (req, res) => {
     // Generate JWT token for admin
     const token = jwt.sign(
       {
-        userId: 'admin',
+        userId: admin.email, // Store email as userId for consistency
         role: 'ADMIN',
         email: admin.email
       },
@@ -95,7 +95,7 @@ export const createOfficer = async (req, res) => {
  */
 export const getAllOfficers = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const officers = await adminService.getAllOfficers(adminEmail);
 
     return successResponse(res, { officers }, 200);
@@ -113,7 +113,7 @@ export const updateOfficerStatus = async (req, res) => {
   try {
     const { officerId } = req.params;
     const { status } = req.body;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     if (!status) {
       return errorResponse(res, 'Status is required', 400);
@@ -138,7 +138,7 @@ export const updateOfficerStatus = async (req, res) => {
 export const deleteOfficer = async (req, res) => {
   try {
     const { officerId } = req.params;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     const officer = await adminService.deleteOfficer(adminEmail, officerId);
 
@@ -158,7 +158,7 @@ export const deleteOfficer = async (req, res) => {
  */
 export const getPlatformStats = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const stats = await adminService.getPlatformStats(adminEmail);
 
     return successResponse(res, { stats }, 200);
@@ -173,7 +173,7 @@ export const getPlatformStats = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const users = await adminService.getAllUsers(adminEmail);
 
     return successResponse(res, { users }, 200);
@@ -190,7 +190,7 @@ export const getAllUsers = async (req, res) => {
 export const getUserDetails = async (req, res) => {
   try {
     const { userId } = req.params;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     const user = await adminService.getUserDetails(adminEmail, userId);
 
@@ -208,7 +208,7 @@ export const getUserDetails = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     const user = await adminService.deleteUser(adminEmail, userId);
 
@@ -228,7 +228,7 @@ export const deleteUser = async (req, res) => {
  */
 export const getAllProposals = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const proposals = await adminService.getAllProposals(adminEmail);
 
     return successResponse(res, { proposals }, 200);
@@ -245,7 +245,7 @@ export const getAllProposals = async (req, res) => {
 export const getProposalDetails = async (req, res) => {
   try {
     const { proposalId } = req.params;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     const proposal = await adminService.getProposalDetails(adminEmail, proposalId);
 
@@ -264,7 +264,7 @@ export const updateProposalStatus = async (req, res) => {
   try {
     const { proposalId } = req.params;
     const { status } = req.body;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     if (!status) {
       return errorResponse(res, 'Status is required', 400);
@@ -289,7 +289,7 @@ export const updateProposalStatus = async (req, res) => {
 export const deleteProposal = async (req, res) => {
   try {
     const { proposalId } = req.params;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     const proposal = await adminService.deleteProposal(adminEmail, proposalId);
 
@@ -311,7 +311,7 @@ export const overrideProposalDecision = async (req, res) => {
   try {
     const { proposalId } = req.params;
     const { decision, reason } = req.body;
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
 
     if (!decision || !reason) {
       return errorResponse(res, 'Decision and reason are required', 400);
@@ -335,7 +335,7 @@ export const overrideProposalDecision = async (req, res) => {
  */
 export const getPlatformConfiguration = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const config = await adminService.getPlatformConfiguration(adminEmail);
 
     return successResponse(res, { config }, 200);
@@ -351,7 +351,7 @@ export const getPlatformConfiguration = async (req, res) => {
  */
 export const updatePlatformConfiguration = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const configUpdates = req.body;
 
     const result = await adminService.updatePlatformConfiguration(adminEmail, configUpdates);
@@ -363,9 +363,10 @@ export const updatePlatformConfiguration = async (req, res) => {
     return errorResponse(res, error.message, 400);
   }
 };
+
 export const getPlatformActivity = async (req, res) => {
   try {
-    const adminEmail = req.user.email;
+    const adminEmail = req.user.userId; // Fixed: use userId instead of email
     const activity = await adminService.getPlatformActivity(adminEmail);
 
     return successResponse(res, { activity }, 200);

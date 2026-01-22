@@ -121,7 +121,8 @@ export const requestAdminOTP = async (req, res, next) => {
         `
             };
 
-            await sgMail.send(msg);
+            const response = await sgMail.send(msg);
+            console.log('SendGrid response:', response[0]?.statusCode);
             console.log('OTP email sent successfully via SendGrid API');
 
             res.status(200).json({
