@@ -16,8 +16,8 @@ const app = express();
 
 // Middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
-  next();
+    console.log(`${req.method} ${req.path}`);
+    next();
 });
 app.use(helmet()); // Security headers
 app.use(cors()); // Enable CORS
@@ -37,46 +37,34 @@ app.use('/uploads', express.static('uploads'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
-
-// Debug endpoint to check environment variables (remove in production)
-app.get('/debug/env', (req, res) => {
-  res.status(200).json({
-    NODE_ENV: process.env.NODE_ENV,
-    SMTP_HOST: process.env.SMTP_HOST ? 'SET' : 'NOT SET',
-    SMTP_PORT: process.env.SMTP_PORT ? 'SET' : 'NOT SET',
-    SMTP_USER: process.env.SMTP_USER ? 'SET' : 'NOT SET',
-    SMTP_PASS: process.env.SMTP_PASS ? 'SET' : 'NOT SET',
-    DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET'
-  });
+    res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 // Test endpoint
 app.post('/test-register', (req, res) => {
-  console.log('Test register endpoint hit!');
-  console.log('Body:', req.body);
-  res.status(200).json({ message: 'Test successful', body: req.body });
+    console.log('Test register endpoint hit!');
+    console.log('Body:', req.body);
+    res.status(200).json({ message: 'Test successful', body: req.body });
 });
 
 console.log('Test endpoint registered at POST /test-register');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('=== ERROR MIDDLEWARE ===');
-  console.error('Error message:', err.message);
-  console.error('Error stack:', err.stack);
-  console.error('=======================');
+    console.error('=== ERROR MIDDLEWARE ===');
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    console.error('=======================');
 
-  res.status(500).json({
-    message: err.message || 'Something went wrong!',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+    res.status(500).json({
+        message: err.message || 'Something went wrong!',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
 });
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
 export default app;
