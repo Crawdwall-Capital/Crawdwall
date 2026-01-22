@@ -1,6 +1,6 @@
 // Admin configuration (overall platform overseer)
 // This is the main admin email that uses OTP login - was previously "Super Admin"
-export const ADMIN_EMAIL = 'thiscrawdwallcapital@gmail.com';
+export const ADMIN_EMAIL = 'crawdwallcapital@gmail.com';
 
 // Officer Configuration (review staff created by admin - was previously "Admin")
 export const OFFICER_CONFIG = {

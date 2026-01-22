@@ -28,7 +28,7 @@
         },
         {
             "key": "adminEmail",
-            "value": "thiscrawdwallcapital@gmail.com",
+            "value": "crawdwallcapital@gmail.com",
             "type": "string"
         },
         {
@@ -218,12 +218,13 @@
                             "raw": "{\n  \"email\": \"{{adminEmail}}\"\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/api/admin/request-otp",
+                            "raw": "{{baseUrl}}/api/auth/admin/request-otp",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
+                                "auth",
                                 "admin",
                                 "request-otp"
                             ]
@@ -258,12 +259,13 @@
                             "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"otp\": \"123456\"\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/api/admin/verify-otp",
+                            "raw": "{{baseUrl}}/api/auth/admin/verify-otp",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
+                                "auth",
                                 "admin",
                                 "verify-otp"
                             ]

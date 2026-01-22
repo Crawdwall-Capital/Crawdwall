@@ -45,6 +45,10 @@ export const createProposal = async (req, res, next) => {
       return errorResponse(res, error.details[0].message, 400);
     }
 
+    if (!value) {
+      return errorResponse(res, 'Invalid request data', 400);
+    }
+
     const { isDraft = false, ...proposalData } = value;
 
     // Add supporting documents to proposal data

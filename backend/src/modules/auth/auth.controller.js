@@ -103,7 +103,7 @@ export const requestAdminOTP = async (req, res, next) => {
 
     // Create a transporter for sending email
     // In a real application, configure this with your email service provider
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       // Use environment variables for email configuration
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT) || 587,
