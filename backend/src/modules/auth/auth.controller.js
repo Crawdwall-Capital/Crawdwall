@@ -116,6 +116,14 @@ export const requestAdminOTP = async (req, res, next) => {
 
     // Send OTP via email to the target admin
     try {
+      console.log('Attempting to send OTP email...');
+      console.log('SMTP Config:', {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        passLength: process.env.SMTP_PASS?.length
+      });
+
       await transporter.sendMail({
         from: process.env.SMTP_USER || '"Crawdwall Admin" <admin@yourdomain.com>',
         to: adminEmail,  // Send to the target admin email, not the super admin
@@ -134,12 +142,14 @@ export const requestAdminOTP = async (req, res, next) => {
         `
       });
 
+      console.log('OTP email sent successfully');
       res.status(200).json({
         message: 'OTP sent successfully to admin email',
         adminEmail: adminEmail
       });
     } catch (emailErr) {
       console.error('Failed to send email:', emailErr);
+      console.error('Email error details:', emailErr.message);
       // For security reasons, still return success message to prevent enumeration
       res.status(200).json({
         message: 'OTP generated and stored, but failed to send email. Contact admin if admin doesn\'t receive it.',
