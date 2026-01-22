@@ -106,11 +106,19 @@ export const requestAdminOTP = async (req, res, next) => {
     const transporter = nodemailer.createTransport({
       // Use environment variables for email configuration
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false, // true for 465, false for other ports
+      port: parseInt(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE === 'true' || parseInt(process.env.SMTP_PORT) === 465,
       auth: {
         user: process.env.SMTP_USER || '',
         pass: process.env.SMTP_PASS || ''
+      },
+      // Add timeout and connection options for Render
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000,   // 30 seconds
+      socketTimeout: 60000,     // 60 seconds
+      // TLS options
+      tls: {
+        rejectUnauthorized: false
       }
     });
 
