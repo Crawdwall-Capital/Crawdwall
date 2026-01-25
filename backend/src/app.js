@@ -26,11 +26,16 @@ const corsOptions = {
             'http://localhost:3001',
             'http://localhost:5173', // Vite default
             'http://localhost:4173', // Vite preview
-            'https://frontend-crawdwall-capital.vercel.app', // Your Vercel frontend
+            'https://frontend-crawdwall-capital.vercel.app', // Your main Vercel frontend
             'https://crawdwall-frontend.onrender.com', // Alternative Render frontend
             'https://crawdwall.com', // Custom domain if you have one
             process.env.FRONTEND_URL // Environment variable for frontend URL
         ].filter(Boolean); // Remove undefined values
+
+        // Allow all Vercel preview deployments for your project
+        if (origin && origin.includes('frontend-crawdwall-capital') && origin.includes('vercel.app')) {
+            return callback(null, true);
+        }
 
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
