@@ -47,7 +47,7 @@ export const verifyAdminOTP = async (req, res) => {
     );
 
     return successResponse(res, {
-      message: 'Credential validated',
+      message: 'Login successful',
       token,
       role: 'ADMIN'
     }, 200);
