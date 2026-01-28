@@ -43,6 +43,11 @@ export const login = async (req, res, next) => {
 
 export const me = async (req, res, next) => {
     try {
+        console.log('=== /me endpoint debug ===');
+        console.log('req.user:', req.user);
+        console.log('req.user.userId:', req.user.userId);
+        console.log('userId type:', typeof req.user.userId);
+
         const user = await authService.getMe(req.user.userId);
         res.status(200).json({
             success: true,
@@ -55,6 +60,9 @@ export const me = async (req, res, next) => {
             }
         });
     } catch (err) {
+        console.error('=== /me endpoint error ===');
+        console.error('Error:', err.message);
+        console.error('req.user:', req.user);
         next(err);
     }
 };
