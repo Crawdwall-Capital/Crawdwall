@@ -9,19 +9,10 @@ const ALLOWED_SIGNUP_TYPES = ['ORGANIZER', 'INVESTOR', 'ADMIN'];
  * GET CURRENT USER
  */
 export const getMe = async (userId) => {
-  console.log('=== getMe service debug ===');
-  console.log('Looking for userId:', userId);
-  console.log('userId type:', typeof userId);
-
   const result = await pool.query(
     'SELECT id, name, email, "phoneNumber", role, "createdAt" FROM "User" WHERE id = $1',
     [userId]
   );
-
-  console.log('Query result rows:', result.rows.length);
-  if (result.rows.length > 0) {
-    console.log('Found user:', result.rows[0].email);
-  }
 
   if (result.rows.length === 0) {
     throw new Error('User not found');

@@ -43,11 +43,6 @@ export const login = async (req, res, next) => {
 
 export const me = async (req, res, next) => {
     try {
-        console.log('=== /me endpoint debug ===');
-        console.log('req.user:', req.user);
-        console.log('req.user.userId:', req.user.userId);
-        console.log('req.user.role:', req.user.role);
-
         // Handle ADMIN role differently (they don't exist in User table)
         if (req.user.role === 'ADMIN') {
             return res.status(200).json({
@@ -75,9 +70,6 @@ export const me = async (req, res, next) => {
             }
         });
     } catch (err) {
-        console.error('=== /me endpoint error ===');
-        console.error('Error:', err.message);
-        console.error('req.user:', req.user);
         next(err);
     }
 };
