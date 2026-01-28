@@ -46,8 +46,23 @@ export const me = async (req, res, next) => {
         console.log('=== /me endpoint debug ===');
         console.log('req.user:', req.user);
         console.log('req.user.userId:', req.user.userId);
-        console.log('userId type:', typeof req.user.userId);
+        console.log('req.user.role:', req.user.role);
 
+        // Handle ADMIN role differently (they don't exist in User table)
+        if (req.user.role === 'ADMIN') {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    id: 'admin',
+                    name: 'Platform Administrator',
+                    email: req.user.userId, // For admin, userId is the email
+                    role: 'ADMIN',
+                    createdAt: new Date().toISOString()
+                }
+            });
+        }
+
+        // For regular users (ORGANIZER/INVESTOR)
         const user = await authService.getMe(req.user.userId);
         res.status(200).json({
             success: true,
