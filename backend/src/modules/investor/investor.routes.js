@@ -1,45 +1,27 @@
 import express from 'express';
+import * as investorController from './investor.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
-import { authorize } from '../middlewares/role.middleware.js';
-import { 
-  getInvestmentOpportunities, 
-  getInvestmentOpportunity, 
-  getInvestments,
-  getEscrowActivity 
-} from './investor.controller.js';
+import { requireRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-// View all approved investment opportunities - only for investors
-router.get(
-  '/opportunities',
-  authenticate,
-  authorize('INVESTOR'),
-  getInvestmentOpportunities
-);
+// All investor routes require authentication and INVESTOR role
+router.use(authenticate);
+router.use(requireRole(['INVESTOR']));
 
-// View specific investment opportunity - only for investors
-router.get(
-  '/opportunities/:proposalId',
-  authenticate,
-  authorize('INVESTOR'),
-  getInvestmentOpportunity
-);
+// Investment opportunities
+router.get('/opportunities', investorController.getInvestmentOpportunities);
 
-// View investor's investments - only for investors
-router.get(
-  '/investments',
-  authenticate,
-  authorize('INVESTOR'),
-  getInvestments
-);
+// Investor portfolio
+router.get('/portfolio', investorController.getInvestorPortfolio);
 
-// View escrow activity - only for investors
-router.get(
-  '/escrow',
-  authenticate,
-  authorize('INVESTOR'),
-  getEscrowActivity
-);
+// Investment activity feed
+router.get('/activity', investorController.getInvestmentActivity);
+
+// Make investment
+router.post('/invest', investorController.makeInvestment);
+
+// Investment statistics
+router.get('/stats', investorController.getInvestmentStats);
 
 export default router;

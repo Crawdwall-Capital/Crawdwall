@@ -1,92 +1,92 @@
-
 import * as investorService from './investor.service.js';
+import { successResponse, errorResponse } from '../utils/response.js';
 
-export const getInvestmentOpportunities = async (req, res, next) => {
+/**
+ * GET INVESTMENT OPPORTUNITIES
+ * GET /investor/opportunities
+ */
+export const getInvestmentOpportunities = async (req, res) => {
   try {
-    const { eventType } = req.query;
-    const opportunities = await investorService.getInvestmentOpportunities(eventType);
-    
-    // Format response to match the API specification
-    const formattedOpportunities = opportunities.map(opportunity => ({
-      proposalId: opportunity.id,
-      title: opportunity.eventTitle,
-      eventType: opportunity.eventType || 'EVENT', // Default to EVENT if not specified
-      eventDate: opportunity.eventDate || null,
-      documentUrl: opportunity.pitchVideoUrl || opportunity.budgetFile || opportunity.revenuePlanFile || null
-    }));
-    
-    res.status(200).json({
-      success: true,
-      data: formattedOpportunities
-    });
-  } catch (err) {
-    next(err);
+    const investorId = req.user.userId;
+    const opportunities = await investorService.getInvestmentOpportunities(investorId);
+
+    return successResponse(res, opportunities, 200);
+  } catch (error) {
+    console.error('Get investment opportunities error:', error);
+    return errorResponse(res, error.message, 400);
   }
 };
 
-
-export const getInvestmentOpportunity = async (req, res, next) => {
+/**
+ * GET INVESTOR PORTFOLIO
+ * GET /investor/portfolio
+ */
+export const getInvestorPortfolio = async (req, res) => {
   try {
-    const { proposalId } = req.params;
-    
-    if (!proposalId) {
-      return res.status(400).json({ message: 'Proposal ID is required' });
-    }
-    
-    const opportunity = await investorService.getInvestmentOpportunityById(proposalId);
-    
-    if (!opportunity) {
-      return res.status(404).json({ message: 'Investment opportunity not found' });
-    }
-    
-    if (opportunity.status !== 'APPROVED') {
-      return res.status(404).json({ message: 'Investment opportunity not found or not approved' });
-    }
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        proposalId: opportunity.id,
-        title: opportunity.eventTitle,
-        eventType: opportunity.eventType || 'EVENT',
-        eventDate: opportunity.eventDate || null,
-        documentUrl: opportunity.pitchVideoUrl || opportunity.budgetFile || opportunity.revenuePlanFile || null,
-        status: opportunity.status
-      }
-    });
-  } catch (err) {
-    next(err);
+    const investorId = req.user.userId;
+    const portfolio = await investorService.getInvestorPortfolio(investorId);
+
+    return successResponse(res, portfolio, 200);
+  } catch (error) {
+    console.error('Get investor portfolio error:', error);
+    return errorResponse(res, error.message, 400);
   }
 };
 
-
-export const getInvestments = async (req, res, next) => {
+/**
+ * GET INVESTMENT ACTIVITY
+ * GET /investor/activity
+ */
+export const getInvestmentActivity = async (req, res) => {
   try {
-    // For now, we'll return an empty array since the investment tracking model isn't implemented yet
-    // In a future implementation, this would query a Investments table
-    const investments = await investorService.getInvestorInvestments(req.user.userId);
-    
-    res.status(200).json({
-      success: true,
-      data: investments
-    });
-  } catch (err) {
-    next(err);
+    const investorId = req.user.userId;
+    const activity = await investorService.getInvestmentActivity(investorId);
+
+    return successResponse(res, activity, 200);
+  } catch (error) {
+    console.error('Get investment activity error:', error);
+    return errorResponse(res, error.message, 400);
   }
 };
 
-
-export const getEscrowActivity = async (req, res, next) => {
+/**
+ * MAKE INVESTMENT
+ * POST /investor/invest
+ */
+export const makeInvestment = async (req, res) => {
   try {
-    // For now, we'll return placeholder data since the escrow system isn't implemented yet
-    // In a future implementation, this would query an Escrow table
-    const escrowActivity = await investorService.getEscrowActivity(req.user.userId);
-    
-    res.status(200).json({
-      success: true,
-      data: escrowActivity
-    });
-  } catch (err) {
-    next(err);
+    const investorId = req.user.userId;
+    const { proposalId, amount } = req.body;
+
+    if (!proposalId || !amount) {
+      return errorResponse(res, 'Proposal ID and amount are required', 400);
+    }
+
+    if (amount <= 0) {
+      return errorResponse(res, 'Investment amount must be greater than 0', 400);
+    }
+
+    const investment = await investorService.makeInvestment(investorId, proposalId, amount);
+
+    return successResponse(res, investment, 201);
+  } catch (error) {
+    console.error('Make investment error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET INVESTMENT STATISTICS
+ * GET /investor/stats
+ */
+export const getInvestmentStats = async (req, res) => {
+  try {
+    const investorId = req.user.userId;
+    const stats = await investorService.getInvestmentStats(investorId);
+
+    return successResponse(res, stats, 200);
+  } catch (error) {
+    console.error('Get investment stats error:', error);
+    return errorResponse(res, error.message, 400);
   }
 };

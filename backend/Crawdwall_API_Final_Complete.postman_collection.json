@@ -206,6 +206,134 @@
             ]
         },
         {
+            "name": "💰 Investor Functions",
+            "item": [
+                {
+                    "name": "Get Investment Opportunities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/opportunities",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "opportunities"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Make Investment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"proposalId\": \"{{proposalId}}\",\n    \"amount\": 5000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/invest",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "invest"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Investor Portfolio",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/portfolio",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "portfolio"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Investment Activity",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/activity",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "activity"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Investment Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/investor/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "investor",
+                                "stats"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
             "name": "👑 Admin Functions",
             "item": [
                 {

@@ -77,9 +77,14 @@ export const register = async ({ name, email, phoneNumber, password, role }) => 
     );
 
     return {
+      success: true,
       message: 'Registration successful',
       token,
-      role: user.role
+      role: user.role,
+      data: {
+        token,
+        role: user.role
+      }
     };
   } catch (error) {
     console.error('Error creating user:', error);
