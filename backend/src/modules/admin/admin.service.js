@@ -420,7 +420,7 @@ export const updateProposalStatus = async (adminEmail, proposalId, status) => {
     throw new Error('Unauthorized - Admin access required');
   }
 
-  const validStatuses = ['SUBMITTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED'];
+  const validStatuses = ['SUBMITTED', 'UNDER_REVIEW', 'VETTED', 'APPROVED', 'FUNDED', 'CALLBACK', 'REJECTED'];
 
   if (!validStatuses.includes(status)) {
     throw new Error('Invalid status');

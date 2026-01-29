@@ -253,3 +253,194 @@ export const getInvestmentStats = async (investorId) => {
 
   return result.rows[0];
 };
+
+/**
+ * GET INVESTMENT OPPORTUNITY DETAILS
+ * Returns detailed information about a specific investment opportunity
+ */
+export const getInvestmentOpportunityDetails = async (investorId, proposalId) => {
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p."eventTitle" as "eventName",
+      p.description,
+      p."eventType",
+      p."budgetRequested",
+      p."expectedRevenue",
+      p."eventDuration",
+      p.timeline,
+      p."revenuePlan",
+      p."targetAudience",
+      p.location,
+      p."startDate",
+      p."endDate",
+      p."minInvestment",
+      p."maxInvestment",
+      p."projectedReturn",
+      p."riskLevel",
+      p."currentInvestment",
+      p."totalInvestmentNeeded",
+      p.featured,
+      p.status,
+      u.name as "organizerName",
+      u.email as "organizerEmail",
+      u."phoneNumber" as "organizerPhone",
+      -- Check if investor already invested
+      CASE WHEN i.id IS NOT NULL THEN true ELSE false END as "alreadyInvested",
+      i.amount as "investedAmount",
+      i."investmentDate"
+    FROM "Proposal" p
+    JOIN "User" u ON p."organizerId" = u.id
+    LEFT JOIN "Investment" i ON p.id = i."proposalId" AND i."investorId" = $2
+    WHERE p.id = $1 AND p.status IN ('APPROVED', 'FUNDED')
+  `, [proposalId, investorId]);
+
+  if (result.rows.length === 0) {
+    throw new Error('Investment opportunity not found or not available');
+  }
+
+  const opportunity = result.rows[0];
+
+  return {
+    id: opportunity.id,
+    eventName: opportunity.eventName,
+    description: opportunity.description,
+    eventType: opportunity.eventType,
+    budgetRequested: parseFloat(opportunity.budgetRequested),
+    expectedRevenue: parseFloat(opportunity.expectedRevenue),
+    eventDuration: opportunity.eventDuration,
+    timeline: opportunity.timeline,
+    revenuePlan: opportunity.revenuePlan,
+    targetAudience: opportunity.targetAudience,
+    location: opportunity.location || 'TBD',
+    startDate: opportunity.startDate,
+    endDate: opportunity.endDate,
+    minInvestment: parseFloat(opportunity.minInvestment) || 1000,
+    maxInvestment: opportunity.maxInvestment ? parseFloat(opportunity.maxInvestment) : null,
+    projectedReturn: opportunity.projectedReturn || '15-25%',
+    riskLevel: opportunity.riskLevel || 'Medium',
+    currentInvestment: parseFloat(opportunity.currentInvestment) || 0,
+    totalInvestmentNeeded: opportunity.totalInvestmentNeeded ? parseFloat(opportunity.totalInvestmentNeeded) : null,
+    featured: opportunity.featured || false,
+    status: opportunity.status,
+    organizer: {
+      name: opportunity.organizerName,
+      email: opportunity.organizerEmail,
+      phone: opportunity.organizerPhone
+    },
+    investment: {
+      alreadyInvested: opportunity.alreadyInvested,
+      amount: opportunity.investedAmount ? parseFloat(opportunity.investedAmount) : null,
+      date: opportunity.investmentDate
+    }
+  };
+};
+
+/**
+ * GET INVESTOR NOTIFICATIONS
+ * Returns investor's notifications
+ */
+export const getInvestorNotifications = async (investorId) => {
+  const result = await pool.query(`
+    SELECT 
+      ia.id,
+      ia.title,
+      ia.description,
+      ia."createdAt" as date,
+      ia.type,
+      p."eventTitle" as "eventName",
+      'unread' as status
+    FROM "InvestmentActivity" ia
+    LEFT JOIN "Proposal" p ON ia."proposalId" = p.id
+    WHERE ia."investorId" = $1
+    ORDER BY ia."createdAt" DESC
+    LIMIT 20
+  `, [investorId]);
+
+  return result.rows.map(row => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    date: row.date,
+    type: row.type,
+    eventName: row.eventName,
+    status: row.status
+  }));
+};
+
+/**
+ * GET INVESTMENT DOCUMENTS
+ * Returns documents related to a specific investment
+ */
+export const getInvestmentDocuments = async (investorId, investmentId) => {
+  // First verify the investment belongs to this investor
+  const investmentCheck = await pool.query(`
+    SELECT i.id, p."eventTitle", p."supportingDocuments"
+    FROM "Investment" i
+    JOIN "Proposal" p ON i."proposalId" = p.id
+    WHERE i.id = $1 AND i."investorId" = $2
+  `, [investmentId, investorId]);
+
+  if (investmentCheck.rows.length === 0) {
+    throw new Error('Investment not found or access denied');
+  }
+
+  const investment = investmentCheck.rows[0];
+
+  // Return available documents
+  return {
+    investmentId: investmentId,
+    eventName: investment.eventTitle,
+    documents: [
+      {
+        id: 'investment-agreement',
+        name: 'Investment Agreement',
+        type: 'PDF',
+        url: `/api/investor/documents/${investmentId}/agreement`,
+        description: 'Legal investment agreement document'
+      },
+      {
+        id: 'proposal-documents',
+        name: 'Proposal Supporting Documents',
+        type: 'Various',
+        url: `/api/investor/documents/${investmentId}/proposal`,
+        description: 'Original proposal supporting documents'
+      }
+    ]
+  };
+};
+
+/**
+ * GET INVESTMENT TRANSACTIONS
+ * Returns detailed transaction history for investor
+ */
+export const getInvestmentTransactions = async (investorId) => {
+  const result = await pool.query(`
+    SELECT 
+      i.id as "transactionId",
+      'INVESTMENT' as type,
+      i.amount,
+      i."investmentDate" as date,
+      'COMPLETED' as status,
+      p."eventTitle" as "eventName",
+      p.id as "proposalId",
+      i."projectedReturn",
+      i.progress
+    FROM "Investment" i
+    JOIN "Proposal" p ON i."proposalId" = p.id
+    WHERE i."investorId" = $1
+    ORDER BY i."investmentDate" DESC
+  `, [investorId]);
+
+  return result.rows.map(row => ({
+    transactionId: row.transactionId,
+    type: row.type,
+    amount: parseFloat(row.amount),
+    date: row.date,
+    status: row.status,
+    eventName: row.eventName,
+    proposalId: row.proposalId,
+    projectedReturn: row.projectedReturn,
+    progress: row.progress
+  }));
+};

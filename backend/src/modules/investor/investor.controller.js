@@ -76,6 +76,74 @@ export const makeInvestment = async (req, res) => {
 };
 
 /**
+ * GET INVESTMENT OPPORTUNITY DETAILS
+ * GET /investor/opportunities/:id
+ */
+export const getInvestmentOpportunityDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const investorId = req.user.userId;
+
+    const opportunity = await investorService.getInvestmentOpportunityDetails(investorId, id);
+
+    return successResponse(res, opportunity, 200);
+  } catch (error) {
+    console.error('Get investment opportunity details error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET INVESTOR NOTIFICATIONS
+ * GET /investor/notifications
+ */
+export const getInvestorNotifications = async (req, res) => {
+  try {
+    const investorId = req.user.userId;
+    const notifications = await investorService.getInvestorNotifications(investorId);
+
+    return successResponse(res, notifications, 200);
+  } catch (error) {
+    console.error('Get investor notifications error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET INVESTMENT DOCUMENTS
+ * GET /investor/documents/:investmentId
+ */
+export const getInvestmentDocuments = async (req, res) => {
+  try {
+    const { investmentId } = req.params;
+    const investorId = req.user.userId;
+
+    const documents = await investorService.getInvestmentDocuments(investorId, investmentId);
+
+    return successResponse(res, documents, 200);
+  } catch (error) {
+    console.error('Get investment documents error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
+ * GET INVESTMENT TRANSACTIONS
+ * GET /investor/transactions
+ */
+export const getInvestmentTransactions = async (req, res) => {
+  try {
+    const investorId = req.user.userId;
+    const transactions = await investorService.getInvestmentTransactions(investorId);
+
+    return successResponse(res, transactions, 200);
+  } catch (error) {
+    console.error('Get investment transactions error:', error);
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+/**
  * GET INVESTMENT STATISTICS
  * GET /investor/stats
  */

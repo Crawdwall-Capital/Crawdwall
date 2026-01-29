@@ -1,10 +1,29 @@
 /**
  * Standard success response format
  */
-export const successResponse = (res, data, statusCode = 200) => {
+export const successResponse = (res, data, statusCode = 200, token = null, role = null) => {
+    const response = {
+        success: true,
+        data,
+        timestamp: new Date().toISOString()
+    };
+
+    if (token) response.token = token;
+    if (role) response.role = role;
+
+    return res.status(statusCode).json(response);
+};
+
+/**
+ * Authentication success response format
+ */
+export const authSuccessResponse = (res, data, token, role, message = null, statusCode = 200) => {
     return res.status(statusCode).json({
         success: true,
         data,
+        message: message || 'Authentication successful',
+        token,
+        role,
         timestamp: new Date().toISOString()
     });
 };

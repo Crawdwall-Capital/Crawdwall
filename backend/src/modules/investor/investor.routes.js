@@ -11,6 +11,7 @@ router.use(requireRole(['INVESTOR']));
 
 // Investment opportunities
 router.get('/opportunities', investorController.getInvestmentOpportunities);
+router.get('/opportunities/:id', investorController.getInvestmentOpportunityDetails);
 
 // Investor portfolio
 router.get('/portfolio', investorController.getInvestorPortfolio);
@@ -23,5 +24,14 @@ router.post('/invest', investorController.makeInvestment);
 
 // Investment statistics
 router.get('/stats', investorController.getInvestmentStats);
+
+// Investor notifications
+router.get('/notifications', investorController.getInvestorNotifications);
+
+// Investment documents
+router.get('/documents/:investmentId', investorController.getInvestmentDocuments);
+
+// Investment transactions
+router.get('/transactions', investorController.getInvestmentTransactions);
 
 export default router;
